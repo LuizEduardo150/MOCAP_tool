@@ -1,0 +1,10 @@
+# Ignorar todas as pastas __pycache__ em qualquer nível
+__pycache__/
+
+# Ignorar o arquivo config.txt apenas na raiz
+/config.txt
+
+# Ignorar a pasta "files" (e qualquer conteúdo dentro dela)
+files/
+
+
