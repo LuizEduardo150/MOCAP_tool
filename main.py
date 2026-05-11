@@ -123,7 +123,7 @@ while main_opt != "0":
         container, stream = get_av_video_container(f"{input_path}/{file}")
         
         if container is None or not pose_writer.is_ready():
-            print("\nXXX  Falha inesperada   XXX")
+            print("\nXXX  Falha inesperada ou arquivo não suportado  XXX")
             continue
         
         if stream.frames == 0: # quantidade de frame = 0 pode ser uma foto.

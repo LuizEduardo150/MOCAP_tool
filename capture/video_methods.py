@@ -17,6 +17,9 @@ def get_av_video_container(video_path:str):
 
     except FileNotFoundError:
         return None, None
+    
+    except:
+        return None, None
 
     
 def create_video(file_name:str, camera_index:int, use_poselandmarks=False):
