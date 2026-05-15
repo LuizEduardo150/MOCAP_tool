@@ -12,3 +12,6 @@ test*
 
 # Ignorar também em qualquer subdiretório
 **/test*
+
+# Ignorar também arquivos de planilha
+**.xlsx

@@ -260,7 +260,7 @@ while main_opt != "0":
         for pose_list in reader.records_list:
 
             image = np.ones((hight, width, 3), dtype=np.uint8)
-            image = draw_landmarks_on_image(image, pose_list, None)
+            image = draw_landmarks_on_image(image, pose_list, [11, 13, 21, 15, 19, 17, 23, 25, 27, 29, 31, 1, 2, 3, 7, 9])
 
             cv2.imshow('view bin', image)
         

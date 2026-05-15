@@ -4,7 +4,7 @@ import numpy as np
 from pose.models import PoseInfos, POSE_CONNECTIONS
 
 
-def draw_landmarks_on_image(rgb_image, pose_list:list, different_points:list=None, show_conections=True): # TODO Adicionar os argumentos faltantes
+def draw_landmarks_on_image(rgb_image, pose_list:list, different_points:list=None, show_conections=True):
     
     if len(pose_list) < 1:
         return rgb_image
@@ -35,6 +35,11 @@ def draw_landmarks_on_image(rgb_image, pose_list:list, different_points:list=Non
             p2 = (int(lm_e.x_pose * w), int(lm_e.y_pose * h) )
 
             # Desenha linha verde
-            cv2.line(annotated_image, p1, p2, (0, 255, 0), 1)
+            if different_points and (init in different_points and end in different_points):
+                cv2.line(annotated_image, p1, p2, (0, 0, 255), 1)
+            elif different_points and (init in different_points or end in different_points):
+                cv2.line(annotated_image, p1, p2, (0, 255, 255), 1)
+            else:
+                cv2.line(annotated_image, p1, p2, (0, 255, 0), 1)
 
     return annotated_image
