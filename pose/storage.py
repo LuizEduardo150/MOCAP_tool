@@ -10,14 +10,20 @@ class FramePoseWriter:
         self._file_descriptor = None
         self._is_ready = None
         
-        file_name = file_name_check_extension(file_name, ".pkl")
-
-        try:    
-            self._file_descriptor = open(f"{output_path}/{file_name}", "ab")
-            self._is_ready = True
-            
-        except:
+        if file_name is None or len(file_name) == 0:
             self._is_ready = False
+
+        if self._is_ready is None:
+            file_name = file_name.rstrip().lstrip()
+
+            file_name = file_name_check_extension(file_name, ".pkl")
+
+            try:
+                self._file_descriptor = open(f"{output_path}/{file_name}", "ab")
+                self._is_ready = True
+                
+            except:
+                self._is_ready = False
             
 
     def is_ready(self):

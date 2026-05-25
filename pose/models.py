@@ -64,6 +64,11 @@ class PoseInfos:
     def get_world_landmakrs(self):
         return self.x_world, self.y_world, self.z_world, self.v_world, self.p_world
     
+
+    def get_combined_certainty(self):
+        return (self.p_world * 0.5) + (self.v_world * 0.5)
+    
+
     def __str__(self):
 
         return "------------------------------------------------------\n" \

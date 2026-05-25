@@ -30,7 +30,9 @@ def get_body_part_horizontal_rotation(pose_list, index1, index2):
     """
     Calcular a rotação horizontal (XZ) de uma parte do corpo formada
     por dois pontos do resultado do MediaPipe.
+    
     OBS: ->NAO<- usar valores de index corrigidos por 'get_correct_bone_index_sequence'
+    OBS2: Usar os valores da esquerda para direita (Do maior para o menor)
     """
     
     if pose_list is None or len(pose_list) != 33 or index1 > 32 or index2 > 32:
@@ -110,57 +112,84 @@ def check_directs_angles(x, y, z):
     return value
 
 
-def body_in_front_view(pose_list, max_distance_btwn_pivots=5.0):
+def body_aligned(pose_list, max_distance_btwn_pivots=6.0):
     """
-    Verificar se um corpo rastrado pelo MediaPipe esta de frente para a camera
+    Verificar se um corpo rastrado pelo MediaPipe esta alinhado com a camera
     OBS: ->NAO<- usar valores de index corrigidos por 'get_correct_bone_index_sequence'
-    """
-
-    rot_z = direct_angle_z_3d(pose_list, 12, 11)
+    OBS2: Não destingue corpo de frente ou de costas, apenas o alinhamento com a camera
     
-    if 90+max_distance_btwn_pivots >= rot_z >= 90-max_distance_btwn_pivots:
-        return True
+    :returns: Boolean (corpo alinhado), float (certeza do modelo ao resultado)
+    """
 
     r_shoulder = get_body_part_horizontal_rotation(pose_list, 12, 11)
     r_waist = get_body_part_horizontal_rotation(pose_list, 24, 23)
-    r_ears = get_body_part_horizontal_rotation(pose_list, 8, 7)
-    r_mouth = get_body_part_horizontal_rotation(pose_list, 10, 9)
 
-    if (0-max_distance_btwn_pivots <= r_shoulder <= 0+max_distance_btwn_pivots) and \
-       (0-max_distance_btwn_pivots <= r_waist <= 0+max_distance_btwn_pivots) and \
-       (0-max_distance_btwn_pivots <= r_ears <= 0+max_distance_btwn_pivots) and \
-       (0-max_distance_btwn_pivots <= r_mouth <= 0+max_distance_btwn_pivots):
-        return True
+    certainty1 = (pose_list[12].get_combined_certainty() * 0.5) + (pose_list[11].get_combined_certainty() * 0.5)
+    certainty2 = (pose_list[24].get_combined_certainty() * 0.5) + (pose_list[23].get_combined_certainty() * 0.5)
+    certainty = (certainty1 * 0.5) + (certainty2 * 0.5)
+
+    if (-max_distance_btwn_pivots <= r_shoulder <= max_distance_btwn_pivots) and \
+       (-max_distance_btwn_pivots <= r_waist <= max_distance_btwn_pivots):
+        return True, certainty
+    
     else:
-        return False
+        return False, certainty
 
 
-def body_is_in_front_t_pose(pose_list, maximum_deviation=5.0):
+def body_is_aligned_t_pose(pose_list, maximum_deviation=5.0):
+    """
+    Verifica se um corpo está reto diante da câmera e em pose em T
+    analiza a certeza do modelo sobre o resultado do rastreamento.
+
+    :returns: None,None (Caso de erro) | boolen, float (esta em t pose, grau de certeza)
+    """
+
     if pose_list is None or len(pose_list) < 0:
-        return None
+        return None, None
     
-    if not body_in_front_view(pose_list):
-        return False
+    align, cert = body_aligned(pose_list)
+
+    if not align or cert < 0.8:
+        return False, cert
     
+    # __ obter os indices dos ossos ordenadamente
     b1_L_arm, b2_L_arm = get_correct_bone_index_sequence(pose_list, 11, 13)
     b1_L_forearm, b2_L_forearm = get_correct_bone_index_sequence(pose_list, 13, 15)
     b1_R_arm, b2_R_arm = get_correct_bone_index_sequence(pose_list, 14, 12)
     b1_R_forearm, b2_R_forearm = get_correct_bone_index_sequence(pose_list, 16, 14)
 
+
     rot_L_arm = direct_angle_x_3d(pose_list, b1_L_arm, b2_L_arm, True)
+    cert1 = pose_list[b1_L_arm].get_combined_certainty()
+    cert2 = pose_list[b2_L_arm].get_combined_certainty()
+    cert_L_arm = (cert1 * 0.5) + (cert2 * 0.5)
+
     rot_L_forearm = direct_angle_x_3d(pose_list, b1_L_forearm, b2_L_forearm, True)
+    cert1 = pose_list[b1_L_forearm].get_combined_certainty()
+    cert2 = pose_list[b2_L_forearm].get_combined_certainty()
+    cert_L_forearm = (cert1 * 0.5) + (cert2 * 0.5)
+
     rot_R_arm = direct_angle_x_3d(pose_list, b1_R_arm, b2_R_arm, True)
+    cert1 = pose_list[b1_R_arm].get_combined_certainty()
+    cert2 = pose_list[b2_R_arm].get_combined_certainty()
+    cert_R_arm = (cert1 * 0.5) + (cert2 * 0.5)
+
     rot_R_forearm = direct_angle_x_3d(pose_list, b1_R_forearm, b2_R_forearm, True)
+    cert1 = pose_list[b1_R_forearm].get_combined_certainty()
+    cert2 = pose_list[b2_R_forearm].get_combined_certainty()
+    cert_R_forearm = (cert1 * 0.5) + (cert2 * 0.5)    
+
+    cert = (cert_L_arm * 0.25) + (cert_L_forearm * 0.25) + (cert_R_arm * 0.25) + (cert_R_forearm * 0.25)
 
     if (0-maximum_deviation <= rot_L_arm     <= 0+maximum_deviation) and \
        (0-maximum_deviation <= rot_L_forearm <= 0+maximum_deviation) and \
        (0-maximum_deviation <= rot_R_arm     <= 0+maximum_deviation) and \
        (0-maximum_deviation <= rot_R_forearm <= 0+maximum_deviation):
         
-        return True
+        return True, cert
 
     else:
-        return False
+        return False, cert
     
 
 

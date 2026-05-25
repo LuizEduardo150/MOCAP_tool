@@ -13,6 +13,7 @@ from capture.image_methods import rotate_image, resize_by_scale
 from pose.media_pipe_pose import MPPoseProcessor
 from pose.storage import FramePoseWriter, FramePoseReader
 from pose.utils_cv2 import draw_landmarks_on_image
+from pose.calculations import body_is_aligned_t_pose
 
 
 """
@@ -91,7 +92,7 @@ progress_thread.start()
 while main_opt != "0":
 
     main_opt = input(
-        "\n\n-------------- MOCAP EZ TOOL -------------------" \
+        "\n\n-------------- MOCAP TOOL -------------------" \
         "\n| (1) Iniciar processamento de vídeo" \
         "\n| (2) Exibir captura sem gerar registro" \
         "\n| (3) Exibir poses registradas em arquivo binário" \
@@ -112,25 +113,31 @@ while main_opt != "0":
         file = choose_input_file(files)
         
         if file is None:
-            print("* Nada a ser feito.")
             continue
         
         # __ Arquivo foi escolhido
-        file_name = input("\n> Escolha o nome do arquivo a ser gerado: ")
-        pose_writer = FramePoseWriter(output_path, file_name)
-        processor = MPPoseProcessor(trained_model)
-
         container, stream = get_av_video_container(f"{input_path}/{file}")
-        
-        if container is None or not pose_writer.is_ready():
+        if container is None:
             print("\nXXX  Falha inesperada ou arquivo não suportado  XXX")
             continue
         
-        if stream.frames == 0: # quantidade de frame = 0 pode ser uma foto.
+        if stream.frames <= 5: # Pouca quantidade de frames pode ser uma foto (0) ou video muito curto.
+            print("\nXXX  Sem  quantidade suficiente de frames XXX")
+        
+        file_name = input("\n> Escolha o nome do arquivo a ser gerado: ")
+        pose_writer = FramePoseWriter(output_path, file_name)
+
+        if not pose_writer.is_ready():
+            print(f'\nXXX  Impossível gerar arquivo de saída "{output_path}/{file_name}" XXX')
             continue
         
-        # __ Arquivos abertos
+        # __ Video e descritores abertos
+        processor = MPPoseProcessor(trained_model)
         shape_recorded = False
+        body_h = None
+        body_w = None
+        body_size_cert = 0.0
+
         fps = float(stream.average_rate)
         duration_sec = float(stream.duration * stream.time_base) if stream.duration else 0
         progress_bar_value = 0
@@ -145,16 +152,23 @@ while main_opt != "0":
         # Rodar vídeo
         for frame in container.decode(video=0):
             img = frame.to_ndarray(format="bgr24")
-            
-            if not shape_recorded:
-                h, w, _ = img.shape
-                pose_writer.write_shape_of_video(h, w)
-                shape_recorded = True
+            frame_timestamp_ms += float(frame.pts * frame.time_base * 1000)
 
             if rotation is not None: 
                 img = rotate_image(img, rotation)
-            
-            frame_timestamp_ms += float(frame.pts * frame.time_base * 1000)
+
+            h, w, _ = img.shape
+
+            if h > 1080 or w > 1920:
+                prop1 = 1080/h
+                prop2 = 1920/w
+                prop = prop1-0.1 if prop1 < prop2 else prop2-0.1
+                img = resize_by_scale(img, prop)
+                h, w, _ = img.shape
+
+            if not shape_recorded:
+                pose_writer.write_shape_of_video(h, w)
+                shape_recorded = True
 
             # __ Rastrear esqueleto
             processor.process_frame(img, frame_timestamp_ms)
@@ -257,6 +271,11 @@ while main_opt != "0":
         reader.load_data_from_file()
         hight, width = reader.get_record_image_shape()
         
+        if len(reader.records_list) <= 2:
+            print("\nXXX Arquivo contem quantidade insuficiente de registros XXX")
+            reader.close_file_descriptor()
+            continue
+
         for pose_list in reader.records_list:
 
             image = np.ones((hight, width, 3), dtype=np.uint8)
