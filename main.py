@@ -13,7 +13,7 @@ from capture.image_methods import rotate_image, resize_by_scale
 from pose.media_pipe_pose import MPPoseProcessor
 from pose.storage import FramePoseWriter, FramePoseReader
 from pose.utils_cv2 import draw_landmarks_on_image
-from pose.calculations import body_is_aligned_t_pose
+from pose.calculations import body_is_aligned_t_pose, get_body_shape
 
 
 """
@@ -134,9 +134,10 @@ while main_opt != "0":
         # __ Video e descritores abertos
         processor = MPPoseProcessor(trained_model)
         shape_recorded = False
-        body_h = None
-        body_w = None
+        body_h = []
+        body_w = []
         body_size_cert = 0.0
+        t_pose_recorded = False
 
         fps = float(stream.average_rate)
         duration_sec = float(stream.duration * stream.time_base) if stream.duration else 0
@@ -172,7 +173,41 @@ while main_opt != "0":
 
             # __ Rastrear esqueleto
             processor.process_frame(img, frame_timestamp_ms)
+            if len(processor.pose_info_result) != 33: # sem registros
+                continue
+
+            # __ Calculos sobre resultado obtido
+            b_h, b_w, t_pose, cert = get_body_shape(processor.pose_info_result, 13.5, False)
             
+            if not t_pose_recorded and t_pose and cert > 0.9:
+                body_h = [b_h]
+                body_w = [b_w]
+                t_pose_recorded = True
+                body_size_cert = cert
+            
+            elif t_pose_recorded and t_pose and cert > 0.9:
+                # TODO fazer logica de retirar certezas muito longe da atual certeza
+                
+                if cert > body_size_cert:
+                    body_h.append(b_h)
+                    body_w.append(b_w)
+                    body_size_cert = cert
+                
+                elif abs(body_size_cert - cert) < 0.02:
+                    body_h.append(b_h)
+                    body_w.append(b_w)
+                
+            elif not t_pose and not t_pose_recorded:
+                if cert > body_size_cert:
+                    body_size_cert = cert
+                    body_h.append(b_h)
+                    body_w.append(b_w)
+
+                elif abs(body_size_cert - cert) < 0.02:
+                    body_h.append(b_h)
+                    body_w.append(b_w)
+
+            #  __ Armazenar rastreamento
             if processor.pose_info_result is not None and len(processor.pose_info_result) > 0:
                 pose_writer.write_landmarks(processor.get_pose_info_list())
             
@@ -189,8 +224,20 @@ while main_opt != "0":
 
         cv2.destroyAllWindows()
         container.close()
-        pose_writer.close_file_descriptor()
         processor.close_landmarker()
+
+        # media dos melhores valores
+        acc_w, acc_h = 0, 0
+        for i in range(len(body_h)):
+            print(f"h: {body_h[i]}  w: {body_w[i]}")
+            acc_h += body_h[i]
+            acc_w += body_w[i]
+        
+        med_h = acc_h / len(body_h)
+        med_w = acc_w / len(body_h)
+        pose_writer.write_body_shape(med_h, med_w)
+
+        pose_writer.close_file_descriptor()
         print(f'"{file_name}" salvo na pasta do programa: files/output')
 
 

@@ -9,6 +9,8 @@ class FramePoseWriter:
         
         self._file_descriptor = None
         self._is_ready = None
+        self._video_shape_stored = False
+        self._body_shape_stored = False
         
         if file_name is None or len(file_name) == 0:
             self._is_ready = False
@@ -31,8 +33,13 @@ class FramePoseWriter:
 
 
     def write_shape_of_video(self, height:int, width:int):
-        shape = (height, width)
-        pickle.dump(shape, self._file_descriptor)
+        if height is None or width is None:
+            return
+
+        if not self._video_shape_stored:
+            shape = (height, width)
+            pickle.dump(shape, self._file_descriptor)
+            self._video_shape_stored = True
 
 
     def write_landmarks(self, pose_list:list):
@@ -41,6 +48,16 @@ class FramePoseWriter:
             pose_info : PoseInfos = pose_info
 
             pickle.dump(pose_info, self._file_descriptor)
+
+
+    def write_body_shape(self, height:int, width:int):
+        if height is None or width is None:
+            return
+        
+        if not self._body_shape_stored:
+            shape = (height, width)
+            pickle.dump(shape, self._file_descriptor)
+            self._body_shape_stored = True
 
     
     def close_file_descriptor(self):
@@ -55,6 +72,8 @@ class FramePoseReader:
         self.records_list = None
         self.video_height = None
         self.video_width = None
+        self.body_width = None
+        self.body_height = None
         
         file_name = file_name_check_extension(file_name, ".pkl")
 
@@ -80,12 +99,17 @@ class FramePoseReader:
         while True:
             try:
                 obj = pickle.load(self._file_descriptor)
+                
+                if type(obj) != PoseInfos:
+                    self.body_height, self.body_width = obj
+                
+                else:
 
-                if len(self.records_list[index]) == 33:
-                    self.records_list.append([])
-                    index += 1
+                    if len(self.records_list[index]) == 33:
+                        self.records_list.append([])
+                        index += 1
 
-                self.records_list[index].append(obj)
+                    self.records_list[index].append(obj)
 
             except EOFError:
                 break
@@ -107,7 +131,3 @@ class FramePoseReader:
             return 0, 0
 
         return self.video_height, self.video_width
-
-
-        
-        

@@ -45,7 +45,7 @@ def get_body_part_horizontal_rotation(pose_list, index1, index2):
 
 
 def euclidean_distance_3d(pose_list, bone_index_1:int, bone_index_2:int, ignore_z=False):
-    if pose_list is None or len(pose_list) < 0 or \
+    if pose_list is None or len(pose_list) == 0 or \
         bone_index_1 >= len(pose_list) or bone_index_2 >= len(pose_list):
         
         return None
@@ -63,7 +63,7 @@ def euclidean_distance_3d(pose_list, bone_index_1:int, bone_index_2:int, ignore_
 
 def direct_angle_x_3d(pose_list, bone_index_1, bone_index_2, ignore_z=False):
     #print(f">> 1: {bone_index_1} 2:{bone_index_2}")
-    if pose_list is None or len(pose_list) < 0 or \
+    if pose_list is None or len(pose_list) == 0 or \
         bone_index_1 >= len(pose_list) or bone_index_2 >= len(pose_list):
         
         return None
@@ -76,7 +76,7 @@ def direct_angle_x_3d(pose_list, bone_index_1, bone_index_2, ignore_z=False):
     
 
 def direct_angle_y_3d(pose_list, bone_index_1, bone_index_2):
-    if pose_list is None or len(pose_list) < 0 or \
+    if pose_list is None or len(pose_list) == 0 or \
         bone_index_1 >= len(pose_list) or bone_index_2 >= len(pose_list):
         
         return None
@@ -90,7 +90,7 @@ def direct_angle_y_3d(pose_list, bone_index_1, bone_index_2):
 
 
 def direct_angle_z_3d(pose_list, bone_index_1, bone_index_2):
-    if pose_list is None or len(pose_list) < 0 or \
+    if pose_list is None or len(pose_list) == 0 or \
         bone_index_1 >= len(pose_list) or bone_index_2 >= len(pose_list):
         
         return None
@@ -144,7 +144,7 @@ def body_is_aligned_t_pose(pose_list, maximum_deviation=5.0):
     :returns: None,None (Caso de erro) | boolen, float (esta em t pose, grau de certeza)
     """
 
-    if pose_list is None or len(pose_list) < 0:
+    if pose_list is None or len(pose_list) == 0:
         return None, None
     
     align, cert = body_aligned(pose_list)
@@ -190,8 +190,46 @@ def body_is_aligned_t_pose(pose_list, maximum_deviation=5.0):
 
     else:
         return False, cert
-    
 
+
+def euclidean_distance_for_hight(pose_list, ignore_z=False):
+    if pose_list is None or len(pose_list) == 0:
+        return 0.0
+    
+    # Criando um ponto ficticio no meio do corpo e na altura dos pes
+    x = pose_list[23].x_world - pose_list[24].x_world
+    y = pose_list[29].y_world
+    z = pose_list[23].z_world
+
+    d_x = x - pose_list[0].x_world
+    d_y = y - pose_list[0].y_world
+    d_z = 0 if ignore_z else z - pose_list[0].z_world
+    
+    return sqrt((d_x**2) + (d_y**2) + (d_z**2))
+
+
+def get_body_shape(pose_list, t_pose_max_deviation=5.0, ignore_z = True):
+    """
+    Obter a altura e largura do corpo. Caso corpo estiver em posicao T,
+    o calculo da largura sera de uma mao a outra, caso contrario, sera a
+    largura do ombro.
+        
+    :returns: None | float, float, boolean, float (height, width, body_in_T_pose, certainty)
+    """
+    
+    if pose_list is None or len(pose_list) != 33:
+        return None, None, None, None
+    
+    tpose, cert = body_is_aligned_t_pose(pose_list, t_pose_max_deviation)
+    if tpose:
+        w = euclidean_distance_3d(pose_list, 16, 15, ignore_z) # maoR -> maoL         
+        h = euclidean_distance_for_hight(pose_list)
+        
+    else:
+        w = euclidean_distance_3d(pose_list, 12, 11, ignore_z)
+        h = euclidean_distance_for_hight(pose_list, ignore_z)
+
+    return h, w, tpose, cert
 
 
 
