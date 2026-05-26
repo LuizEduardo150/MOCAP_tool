@@ -1,4 +1,4 @@
-import bpy
+import bpy # type: ignore
 from math import radians
 
 
@@ -225,7 +225,14 @@ def get_object_last_rotation_keyframe(obj):
 
 
 def insert_location_keyframe(obj, values:list=None, frame_distance=1):
-    
+    """
+    Inserir keyframe de posicao em um objeto no projeto blender
+
+    :obj: Objeto do blender
+    :values: lista com ate 3 posicoes referentes a x,y,z  (EX: [None, 1, None] "move só Y")
+    :frame_distance: distancia de tempo entre um frame e outro
+    """
+
     if not object_is_bpy_type(obj) or not object_ready_for_keyframe_animation(obj) \
         or values is None or frame_distance is None or len(values) == 0:
         return False
@@ -241,16 +248,16 @@ def insert_location_keyframe(obj, values:list=None, frame_distance=1):
 
     # mover objeto nos eixos XYZ
     for i, value in enumerate(values):
-        if i == 0:
+        if i == 0 and value is not None:
             obj.location.x = value
         
-        elif i == 1:
+        elif i == 1 and value is not None:
             obj.location.y = value
 
-        elif i == 2:
+        elif i == 2 and value is not None:
             obj.location.z = value
         
-        else:
+        elif i > 2:
             break
 
     obj.keyframe_insert(
@@ -261,8 +268,16 @@ def insert_location_keyframe(obj, values:list=None, frame_distance=1):
     return True
 
 
+
 def insert_rotation_keyframe(obj, values:list=None, frame_distance=1):
-    
+    """
+    Inserir keyframe de rotacao em um objeto no projeto blender
+
+    :obj: Objeto do blender
+    :values: lista com ate 3 valores de rotacao referentes a x,y,z  (EX: [None, 1, None] "move só Y")
+    :frame_distance: distancia de tempo entre um frame e outro
+    """
+
     if not object_is_bpy_type(obj) or not object_ready_for_keyframe_animation(obj) \
         or values is None or frame_distance is None or len(values) == 0:
         return False
@@ -278,16 +293,16 @@ def insert_rotation_keyframe(obj, values:list=None, frame_distance=1):
 
     # mover objeto nos eixos XYZ
     for i, value in enumerate(values):
-        if i == 0:
+        if i == 0 and value is not None:
             obj.rotation_euler.x = radians(value)
         
-        elif i == 1:
+        elif i == 1 and value is not None:
             obj.rotation_euler.y = radians(value)
 
-        elif i == 2:
+        elif i == 2 and value is not None:
             obj.rotation_euler.z = radians(value)
         
-        else:
+        elif i > 2:
             break
 
     obj.keyframe_insert(
