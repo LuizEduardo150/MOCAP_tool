@@ -14,13 +14,19 @@ VisionRunningMode = mp.tasks.vision.RunningMode
 class MPPoseProcessor:
     
     def __init__(self, trained_model:str):
-        self._mp_options = PoseLandmarkerOptions(
+        self._mp_options_video = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=trained_model),
             running_mode=VisionRunningMode.VIDEO
         )
         
+        self._mp_options_image = PoseLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=trained_model),
+            running_mode=VisionRunningMode.IMAGE
+        )
+
         self.processing_result = None
-        self._landmarker = PoseLandmarker.create_from_options(self._mp_options)
+        self._landmarker_video = PoseLandmarker.create_from_options(self._mp_options_video)
+        self._landmarker_image = PoseLandmarker.create_from_options(self._mp_options_image)
         self.pose_info_result = None
 
     @staticmethod
@@ -45,7 +51,7 @@ class MPPoseProcessor:
         
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
-        self.processing_result = self._landmarker.detect_for_video(mp_image, frame_timestamp_ms)
+        self.processing_result = self._landmarker_video.detect_for_video(mp_image, frame_timestamp_ms)
 
         if len(self.processing_result.pose_landmarks) < 1 or len(self.processing_result.pose_world_landmarks) < 1:
             self.pose_info_result = []
@@ -61,12 +67,33 @@ class MPPoseProcessor:
                     pose_landmarks[i], world_landmarks[i], i
             ))
 
+
+    def process_image(self, img):
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
+        self.processing_result = self._landmarker_image.detect(mp_image)
+
+        if len(self.processing_result.pose_landmarks) < 1 or len(self.processing_result.pose_world_landmarks) < 1:
+            self.pose_info_result = []
+            return
+        
+        pose_landmarks = self.processing_result.pose_landmarks[0] # Apenas um corpo !
+        world_landmarks = self.processing_result.pose_world_landmarks[0] # Apenas um corpo !
+        
+        self.pose_info_result = []
+        for i in range(33):
+            self.pose_info_result.append(
+                PoseInfos.buid_object_through_mediapipe_result(
+                    pose_landmarks[i], world_landmarks[i], i
+            ))
+
+
     def get_pose_info_list(self):
         return self.pose_info_result
 
 
     def close_landmarker(self):
-        self._landmarker.close()
+        self._landmarker_video.close()
+        self._landmarker_image.close()
 
 
 
