@@ -13,7 +13,7 @@ from capture.image_methods import rotate_image, resize_by_scale
 from pose.media_pipe_pose import MPPoseProcessor
 from pose.storage import FramePoseWriter, FramePoseReader
 from pose.utils_cv2 import draw_landmarks_on_image
-from pose.calculations import body_is_aligned_t_pose, get_body_shape
+from pose.calculations import body_is_aligned_t_pose, body_aligned
 
 
 """
@@ -33,8 +33,7 @@ def progress_tread_function():
         new_progress_bar = get_progress_bar(progress_bar_tot, progress_bar_value)
         if new_progress_bar != progress_bar:
             progress_bar = new_progress_bar
-            print(new_progress_bar)
-
+            print(f"\r{new_progress_bar}", end="")
 
         thr_event.clear()
 
@@ -63,21 +62,108 @@ def list_input_files(files:list):
         print(f"({i}) - {file}")
 
 
+def dev_process_image():
+    files = listdir(input_path)
+        
+    if len(files) == 0:
+        print(f"\nX >> Não há arquivos salvos na pasta: {input_path}")
+        return
+    
+    list_input_files(files)
+    file = choose_input_file(files)
+    
+    if file is None:
+        return
+    
+    img = cv2.imread(f"{input_path}/{file}")
+    
+    if img is None:
+        print("\nXXX  Falha inesperada ou arquivo não suportado  XXX")
+        return
+            
+    file_name = "image_" + input("\n> Escolha o nome do arquivo a ser gerado: ")
+    pose_writer = FramePoseWriter(output_path, file_name)
+
+    if not pose_writer.is_ready():
+        print(f'\nXXX  Impossível gerar arquivo de saída "{output_path}/{file_name}"  XXX')
+        return
+    
+    processor = MPPoseProcessor(trained_model)
+    shape_recorded = False
+    
+    h, w, _ = img.shape
+
+    if h > 1080 or w > 1920:
+        prop1 = 1080/h
+        prop2 = 1920/w
+        prop = prop1-0.1 if prop1 < prop2 else prop2-0.1
+        img = resize_by_scale(img, prop)
+        h, w, _ = img.shape
+
+    if not shape_recorded:
+        pose_writer.write_shape_of_video(h, w)
+        shape_recorded = True
+
+    # __ Rastrear esqueleto
+    processor.process_image(img)
+    if len(processor.pose_info_result) != 33: # sem registros
+        return
+
+    #  __ Armazenar rastreamento
+    if processor.pose_info_result is not None and len(processor.pose_info_result) > 0:
+        pose_writer.write_landmarks(processor.get_pose_info_list())
+    
+    img = draw_landmarks_on_image(img, processor.get_pose_info_list())
+    pose_writer.write_body_shape(0, 0) # Apenas para não bugar a leitura
+
+
+    cv2.imshow("res", img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    processor.close_landmarker()
+    pose_writer.close_file_descriptor()
+
+    print(f'"{file_name}" salvo na pasta do programa: files/output')
+
+
+def dev_show_pose_from_image():
+    file_name = input("Nome do arquivo de registros: ")
+    
+    reader = FramePoseReader(output_path, file_name)
+
+    if not reader.is_ready():
+        print("\nXXX Arquivo não encontrado XXX")
+        return
+
+    reader.load_data_from_file()
+    height, width = reader.get_record_image_shape()
+    
+    for pose_list in reader.records_list:
+        
+        image = np.ones((height, width, 3), dtype=np.uint8)
+        image = draw_landmarks_on_image(image, pose_list, [11, 13, 21, 15, 19, 17, 23, 25, 27, 29, 31, 1, 2, 3, 7, 9])
+    
+    cv2.imshow('process result', image)
+    cv2.waitKey(0)        
+    cv2.destroyAllWindows()
+    reader.close_file_descriptor()
+
+
+
 #*********************************************************
 #                           MAIN
 #*********************************************************
 
 # __ conferir estrutura de diretorios do programa
-ret = program_check()
-if ret is None:
+check_ret = program_check()
+if check_ret is None:
     exit(1)
 
-trained_model, input_path, output_path = ret # TODO usar os outros retornos!
-
+trained_model, input_path, output_path, incremental_method, emphasis_pose = check_ret
 progress_thread = Thread(target=progress_tread_function)
 thr_event = Event()
 end_program = False
-progress_bar_tot = 15 # TODO Converfir necessidade de ter valor inicial
+progress_bar_tot = None
 progress_bar_value = 0
 progress_bar = ""
 main_opt = ""
@@ -89,13 +175,14 @@ if not MPPoseProcessor.test_existing_model(trained_model):
 
 # __ Iniciar loop principal do programa
 progress_thread.start()
-while main_opt != "0":
+while main_opt != "0" and main_opt.lower() != 'q':
 
     main_opt = input(
         "\n\n-------------- MOCAP TOOL -------------------" \
         "\n| (1) Iniciar processamento de vídeo" \
         "\n| (2) Exibir captura sem gerar registro" \
-        "\n| (3) Exibir poses registradas em arquivo binário" \
+        "\n| (3) Suavisar resultado do rastreio" \
+        "\n| (4) Exibir poses registradas em arquivo binário" \
         "\n| (0) Sair do programa" \
         "\n------------------------------------------------" \
         "\n >> Sua escolha: "
@@ -122,22 +209,20 @@ while main_opt != "0":
             continue
         
         if stream.frames <= 5: # Pouca quantidade de frames pode ser uma foto (0) ou video muito curto.
-            print("\nXXX  Sem  quantidade suficiente de frames XXX")
+            print("\nXXX  Quantidade insuficiente de frames  XXX")
+            continue
         
         file_name = input("\n> Escolha o nome do arquivo a ser gerado: ")
         pose_writer = FramePoseWriter(output_path, file_name)
 
         if not pose_writer.is_ready():
-            print(f'\nXXX  Impossível gerar arquivo de saída "{output_path}/{file_name}" XXX')
+            print(f'\nXXX  Impossível gerar arquivo de saída "{output_path}/{file_name}"  XXX')
             continue
         
         # __ Video e descritores abertos
         processor = MPPoseProcessor(trained_model)
         shape_recorded = False
-        body_h = []
-        body_w = []
         body_size_cert = 0.0
-        t_pose_recorded = False
 
         fps = float(stream.average_rate)
         duration_sec = float(stream.duration * stream.time_base) if stream.duration else 0
@@ -153,7 +238,11 @@ while main_opt != "0":
         # Rodar vídeo
         for frame in container.decode(video=0):
             img = frame.to_ndarray(format="bgr24")
-            frame_timestamp_ms += float(frame.pts * frame.time_base * 1000)
+
+            if incremental_method is None:
+                frame_timestamp_ms = float(frame.pts * frame.time_base * 1000)
+            else:
+                frame_timestamp_ms += incremental_method
 
             if rotation is not None: 
                 img = rotate_image(img, rotation)
@@ -176,37 +265,6 @@ while main_opt != "0":
             if len(processor.pose_info_result) != 33: # sem registros
                 continue
 
-            # __ Calculos sobre resultado obtido
-            b_h, b_w, t_pose, cert = get_body_shape(processor.pose_info_result, 13.5, False)
-            
-            if not t_pose_recorded and t_pose and cert > 0.9:
-                body_h = [b_h]
-                body_w = [b_w]
-                t_pose_recorded = True
-                body_size_cert = cert
-            
-            elif t_pose_recorded and t_pose and cert > 0.9:
-                # TODO fazer logica de retirar certezas muito longe da atual certeza
-                
-                if cert > body_size_cert:
-                    body_h.append(b_h)
-                    body_w.append(b_w)
-                    body_size_cert = cert
-                
-                elif abs(body_size_cert - cert) < 0.02:
-                    body_h.append(b_h)
-                    body_w.append(b_w)
-                
-            elif not t_pose and not t_pose_recorded:
-                if cert > body_size_cert:
-                    body_size_cert = cert
-                    body_h.append(b_h)
-                    body_w.append(b_w)
-
-                elif abs(body_size_cert - cert) < 0.02:
-                    body_h.append(b_h)
-                    body_w.append(b_w)
-
             #  __ Armazenar rastreamento
             if processor.pose_info_result is not None and len(processor.pose_info_result) > 0:
                 pose_writer.write_landmarks(processor.get_pose_info_list())
@@ -225,19 +283,8 @@ while main_opt != "0":
         cv2.destroyAllWindows()
         container.close()
         processor.close_landmarker()
-
-        # media dos melhores valores
-        acc_w, acc_h = 0, 0
-        for i in range(len(body_h)):
-            print(f"h: {body_h[i]}  w: {body_w[i]}")
-            acc_h += body_h[i]
-            acc_w += body_w[i]
-        
-        med_h = acc_h / len(body_h)
-        med_w = acc_w / len(body_h)
-        pose_writer.write_body_shape(med_h, med_w)
-
         pose_writer.close_file_descriptor()
+
         print(f'"{file_name}" salvo na pasta do programa: files/output')
 
 
@@ -274,6 +321,7 @@ while main_opt != "0":
         process = True if process == "s" else False
         delay = int(1000 / fps)
         processor = MPPoseProcessor(trained_model)
+        frame_timestamp_ms = 0
 
         for frame in container.decode(video=0):
             img = frame.to_ndarray(format="bgr24")
@@ -291,7 +339,11 @@ while main_opt != "0":
                 img = resize_by_scale(img, prop)
 
             if process:
-                frame_timestamp_ms = float(frame.pts * frame.time_base * 1000)
+                if incremental_method is None:
+                    frame_timestamp_ms = float(frame.pts * frame.time_base * 1000)
+                else:
+                    frame_timestamp_ms += incremental_method
+                
                 processor.process_frame(img, frame_timestamp_ms)
                 img = draw_landmarks_on_image(img, processor.get_pose_info_list())
 
@@ -305,8 +357,13 @@ while main_opt != "0":
         container.close()
 
 
+    elif main_opt == "3":
+        # TODO
+        pass
+
+
     # MENU : Exibir poses registradas em arquivo binário
-    elif main_opt == '3':
+    elif main_opt == '4':
         
         file_name = input("Nome do arquivo de registros: ")
         reader = FramePoseReader(output_path, file_name)
@@ -316,7 +373,7 @@ while main_opt != "0":
             continue
 
         reader.load_data_from_file()
-        hight, width = reader.get_record_image_shape()
+        height, width = reader.get_record_image_shape()
         
         if len(reader.records_list) <= 2:
             print("\nXXX Arquivo contem quantidade insuficiente de registros XXX")
@@ -324,20 +381,55 @@ while main_opt != "0":
             continue
 
         for pose_list in reader.records_list:
-
-            image = np.ones((hight, width, 3), dtype=np.uint8)
+            if emphasis_pose is None:
+                pose = False
+            elif emphasis_pose == "align":
+                pose, _ = body_aligned(pose_list)    
+            elif emphasis_pose == "tpose":
+                pose, _ = body_is_aligned_t_pose(pose_list, 20)
+    
+            if pose:
+                image = np.full((height, width, 3), (0, 150, 0), dtype=np.uint8)
+            else:
+                image = np.ones((height, width, 3), dtype=np.uint8)
+            
             image = draw_landmarks_on_image(image, pose_list, [11, 13, 21, 15, 19, 17, 23, 25, 27, 29, 31, 1, 2, 3, 7, 9])
 
             cv2.imshow('view bin', image)
-        
-            if cv2.waitKey(15) & 0xFF == ord('q'):
+            if cv2.waitKey(51) & 0xFF == ord('q'):
                 break
         
         cv2.destroyAllWindows()
         reader.close_file_descriptor()
 
+
+    # __ Funcao escondida para uso na fase de desenvolvimento
+    elif main_opt == "-7":
+        
+        dev_opt = ""
+        while dev_opt != '0' and dev_opt.lower() != 'q':
+            dev_opt = input(
+                "\n\n---------- [DEV: DEBUG Options] --------------" \
+                "\n| (1) Processamento em imagem" \
+                "\n| (2) Exibir poses registradas em arquivo binário" \
+                "\n| (0) Sair do DEV Menu " \
+                "\n------------------------------------------------" \
+                "\n >> Sua escolha: "
+            )
+
+            if dev_opt == "1" :
+                dev_process_image()
+
+            elif dev_opt == "2" :
+                dev_show_pose_from_image()
+
+            else:
+                if dev_opt != '0' and dev_opt.lower() != "q":
+                    input("\nXXX Opção inválida XXX")
+
+
     else:
-        if main_opt != "0":
+        if main_opt != "0" and main_opt.lower() != 'q':
             input("\nXXX Opção inválida XXX")
 
 
