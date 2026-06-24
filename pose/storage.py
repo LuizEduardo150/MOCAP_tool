@@ -49,16 +49,6 @@ class FramePoseWriter:
 
             pickle.dump(pose_info, self._file_descriptor)
 
-
-    def write_body_shape(self, height:int, width:int):
-        if height is None or width is None:
-            return
-        
-        if not self._body_shape_stored:
-            shape = (height, width)
-            pickle.dump(shape, self._file_descriptor)
-            self._body_shape_stored = True
-
     
     def close_file_descriptor(self):
         self._file_descriptor.close()
@@ -72,8 +62,6 @@ class FramePoseReader:
         self.records_list = None
         self.video_height = None
         self.video_width = None
-        self.body_width = None
-        self.body_height = None
         
         file_name = file_name_check_extension(file_name, ".pkl")
 
@@ -99,17 +87,12 @@ class FramePoseReader:
         while True:
             try:
                 obj = pickle.load(self._file_descriptor)
-                
-                if type(obj) != PoseInfos:
-                    self.body_height, self.body_width = obj
-                
-                else:
 
-                    if len(self.records_list[index]) == 33:
-                        self.records_list.append([])
-                        index += 1
+                if len(self.records_list[index]) == 33:
+                    self.records_list.append([])
+                    index += 1
 
-                    self.records_list[index].append(obj)
+                self.records_list[index].append(obj)
 
             except EOFError:
                 break
