@@ -62,7 +62,6 @@ def euclidean_distance_3d(pose_list, bone_index_1:int, bone_index_2:int, ignore_
 
 
 def direct_angle_x_3d(pose_list, bone_index_1, bone_index_2, ignore_z=False):
-    #print(f">> 1: {bone_index_1} 2:{bone_index_2}")
     if pose_list is None or len(pose_list) == 0 or \
         bone_index_1 >= len(pose_list) or bone_index_2 >= len(pose_list):
         
@@ -104,6 +103,11 @@ def direct_angle_z_3d(pose_list, bone_index_1, bone_index_2):
 
 
 def check_directs_angles(x, y, z):
+    """
+    Funcao apenas para fase de desenvolvimento onde o
+    resultado deve ser 1 ou muito proximo de 1.
+    """
+    
     x = radians(x)
     y = radians(y)
     z = radians(z)
@@ -230,22 +234,4 @@ def get_body_shape(pose_list, t_pose_max_deviation=5.0, ignore_z = True):
         h = euclidean_distance_for_hight(pose_list, ignore_z)
 
     return h, w, tpose, cert
-
-
-
-"""
-def direct_angle_x_2d(x1, x2, y1, y2):
-    dx = x2 - x1
-    dy = y2 - y1
-    
-    print("2d_X: ", degrees(atan2( dy, dx )))
-
-
-def direct_angle_y_2d(x1, x2, y1, y2):
-    dx = x2 - x1
-    dy = y2 - y1
-    
-    degrees(atan2( dx, dy ))
-"""
-
 
