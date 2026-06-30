@@ -7,6 +7,9 @@ __pycache__/
 # Ignorar a pasta "files" (e qualquer conteúdo dentro dela)
 files/
 
+#ignorar pasta de anotacoes
+anotacoes/
+
 # Ignorar qualquer arquivo ou pasta que comece com "test"
 test*
 
