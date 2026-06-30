@@ -6,6 +6,41 @@ Modulo python contendo todas as funcoes de calculo que serao usados
 sobre os valores retornados pelo media pipe pose.
 """
 
+def convert_mp_world_data_to_blender_format(frames:list):
+    """
+    Tornar o eixo Y do MP_Pose com mesmo sistema do blender,
+    fazendo deslocamento dos valores se preciso.
+
+    MP_Pose Y Zero: meio do corpo (perto do umbigo)
+    Blender Y Zero: Depende de onde construiram o modelo, mas geralmente nos pés
+    """        
+
+    if frames is None or len(frames) == 0:
+        return None
+
+    mins = []
+
+    # __ (inverter sinais do Y) e (obter menor valor de Y em cada frame)
+    for pose_list in frames:
+        min = None
+
+        for pose in pose_list:
+            pose.y_world *= -1
+
+            if min is None or pose.y_world < min:
+                min = pose.y_world
+
+        mins.append(min) # menor valor de Y de um frame
+    
+    # __ fazer o deslocamento dos numeros do eixo Y para que todo valor de y >= 0
+    for i, pose_list in enumerate(frames):
+        
+        for pose in pose_list:
+                    
+            if mins[i] < 0:
+                pose.y_world = pose.y_world + (mins[i] * -1)
+
+
 
 def get_correct_bone_index_sequence(pose_list, index1, index2):
     """
