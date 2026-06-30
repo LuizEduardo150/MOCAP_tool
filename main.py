@@ -114,8 +114,6 @@ def dev_process_image():
         pose_writer.write_landmarks(processor.get_pose_info_list())
     
     img = draw_landmarks_on_image(img, processor.get_pose_info_list())
-    pose_writer.write_body_shape(0, 0) # Apenas para não bugar a leitura
-
 
     cv2.imshow("res", img)
     cv2.waitKey(0)
