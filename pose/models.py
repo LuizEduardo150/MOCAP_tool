@@ -17,6 +17,21 @@ POSE_CONNECTIONS = [
 ]
 
 
+BODY_POSE_CONECTIONS_FOR_BLENDER = [
+    
+    #(11, 12), # Nao trabalhamos no blender com ombro inteiro
+    (11, 13), (12, 14), # Hands
+    (13, 15), (14, 16), # Fore Hands
+    (15, 17), (16, 18), # Hands
+    #(11, 23), (12, 24), # Belly
+    (23, 25), (24, 26), # UpperLeg
+    (25, 27), (26, 28), # LowerLeg
+    (27, 29), (28, 30), # FOOT
+    (8, 7) # HEAD
+    #(29, 31), (30, 32), (27, 31), (28, 32) # Outros possiveis valores para foot
+]
+
+
 class PoseInfos:
     def __init__(self, id:int=None, x_p:float=None, y_p:float=None, z_p:float=None, v_p:float=None, p_p:float=None, 
                  x_w:float=None, y_w:float=None, z_w:float=None, v_w:float=None, p_w:float=None):
