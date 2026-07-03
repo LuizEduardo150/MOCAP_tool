@@ -1,5 +1,5 @@
 import bpy # type: ignore
-from math import radians
+from math import radians, degrees
 
 
 
@@ -25,7 +25,7 @@ def object_is_armature(obj) -> bool:
     
     except:
         return False
-    
+
 
 def object_is_pose_bone(obj):
     
@@ -33,6 +33,16 @@ def object_is_pose_bone(obj):
         return False
 
     return isinstance(obj, bpy.types.PoseBone)
+
+
+def find_any_armature() -> str | None:
+    """
+    Retorna o nome da primeira armature encontrada no arquivo, se existir.
+    """
+    for obj in bpy.data.objects:
+        if object_is_armature(obj):
+            return obj.name
+    return None
 
 
 def object_ready_for_keyframe_animation(obj):
@@ -312,3 +322,53 @@ def insert_rotation_keyframe(obj, values:list=None, frame_distance=1):
 
     return True
 
+
+
+def get_blender_object_degrees_euler_rotation(obj)-> tuple:
+    
+    if not object_is_bpy_type(obj):
+        return None, None, None
+    
+    # garante que o objeto esteja operando em rotacao euleriana
+    obj.rotation_mode = 'XYZ'
+
+    return (
+        round(degrees(obj.rotation_euler[0])),
+        round(degrees(obj.rotation_euler[1])),
+        round(degrees(obj.rotation_euler[2]))
+    )
+
+
+def set_pose_bone_degrees_euler_rotations(pose_bone, rot_axes):
+    """
+    Função para aplicar rotação em todos os eixos de um PoseBone.
+    
+    :pose_bone: Objeto de um osso em pose mode (PoseBone)
+    :rot_axes: Lista com valores inteiros para rotação. X:[0] Y:[1] Z:[2]
+    """
+
+    if not object_is_pose_bone(pose_bone):
+        return
+    
+    for i in range(len(rot_axes)):
+        if type(rot_axes[i]) == float:
+            rot_axes[i] = round(rot_axes[i])
+        
+        if i == 0:
+            pose_bone.rotation_euler.x = radians(rot_axes[i])
+        elif i == 1:
+            pose_bone.rotation_euler.y = radians(rot_axes[i])
+        elif i == 2:
+            pose_bone.rotation_euler.z = radians(rot_axes[i])
+
+
+def get_all_pose_bones_name_list_from_armature(armature):
+    if not object_is_armature(armature):
+        return None
+
+    bone_names = []
+
+    for bone in armature.pose.bones:
+        bone_names.append(bone.name)
+
+    return bone_names
