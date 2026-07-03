@@ -6,6 +6,7 @@ import numpy as np
 
 from python_utils.utils import cast_int, get_progress_bar
 from python_utils.program_config import program_check
+from python_utils.bone_map_storage import write_basic_file, write_step_by_step_file
 
 from capture.video_methods import get_av_video_container
 from capture.image_methods import rotate_image, resize_by_scale
@@ -148,6 +149,60 @@ def dev_show_pose_from_image():
 
 
 
+def map_bones_menu():
+    
+    def get_help():
+        print(
+            "\n\nO mapeamento dos ossos é a parte responsável em identificar os ossos\n" \
+            "da armature no Blender que correspondem aos pontos rastreados do corpo pelo\n" \
+            "Media Pipe.\n\n", \
+            "Essa etapa é crucial para conseguir utilizar os dados processados pelo Media\n" \
+            "Pipe no Blender para gerar a animação.\n\n", \
+            "Neste menu existem duas opções:\n" \
+            "  1- gerar o arquivo de configuração simples para ser preenchido manualmente\n",\
+            "     em um editor de texto.\n" \
+            "  2- opção do programa com passo a passo para gerar o arquivo completo.\n\n",\
+
+            "Os arquivos de configuração são de formato textual e seguem a seguinte estrutura:\n" \
+            "  * Linhas começadas com # indicam comentário, e não serão lidas.\n" \
+            "  * Linhas começadas por uma tupla com dois números inteiros, seguida de : (Dois pontos)\n"\
+            "     e por fim, o nome do osso no blender. Por exemplo:\n", \
+            "     (11, 13) : Braço.L\n" \
+            '  * Linhas com apenas um caractere entre () "parenteses": Ossos não rastreados pelo Media\n' \
+            '     Pipe, mas que são importantes para a animação.\n'
+        )
+    
+    bm_opt = ""
+    while bm_opt != "0" and bm_opt.lower() != 'q':
+        
+        bm_opt = input(
+            "\n\n------------------ Map bones -------------------" \
+            "\n| (1) Criar estrutura em arquivo simples (irei edita-lo)" \
+            "\n| (2) Gerar arquivo de mapeamento com passo a passo" \
+            "\n| (3) Manual sobre mapeamentos dos ossos " \
+            "\n| (0) Sair do menu atual" \
+            "\n--------------------------------------------------" \
+            "\n >> Sua escolha: "
+        )
+
+        if bm_opt == '1':
+            file_name = input("Escolha o nome do arquivo a ser gerado.\nNome:")
+            if not write_basic_file(output_path, file_name):
+                print('Falha ao criar arquivo, verifique o diretório de "outputs" do programa.')
+
+        elif bm_opt == '2':
+            file_name = input("Escolha o nome do arquivo a ser gerado.\nNome:")
+            if not write_step_by_step_file(output_path, file_name):
+                print('Falha ao criar arquivo, verifique o diretório de "outputs" do programa.')
+
+        elif bm_opt == '3':
+            get_help()
+
+        else:
+            if bm_opt != "0" and bm_opt.lower() != 'q':
+                input("\nXXX Opção inválida XXX")
+
+
 #*********************************************************
 #                           MAIN
 #*********************************************************
@@ -181,6 +236,7 @@ while main_opt != "0" and main_opt.lower() != 'q':
         "\n| (2) Exibir captura sem gerar registro" \
         "\n| (3) Suavisar resultado do rastreio" \
         "\n| (4) Exibir poses registradas em arquivo binário" \
+        "\n| (5) Prepara arquivo de mapeamento de ossos"
         "\n| (0) Sair do programa" \
         "\n------------------------------------------------" \
         "\n >> Sua escolha: "
@@ -399,6 +455,10 @@ while main_opt != "0" and main_opt.lower() != 'q':
         
         cv2.destroyAllWindows()
         reader.close_file_descriptor()
+
+
+    elif main_opt == "5":
+        map_bones_menu()
 
 
     # __ Funcao escondida para uso na fase de desenvolvimento
