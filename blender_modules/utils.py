@@ -1,5 +1,8 @@
 import bpy # type: ignore
+
 from math import radians, degrees
+
+from mathutils import Matrix # type: ignore
 
 
 
@@ -33,6 +36,14 @@ def object_is_pose_bone(obj):
         return False
 
     return isinstance(obj, bpy.types.PoseBone)
+
+
+def object_is_a_3x3_matrix(obj):
+    if obj is None or not type(obj) is Matrix or len(obj) != 3:
+        return False
+    else:
+        return True
+
 
 
 def find_any_armature() -> str | None:
