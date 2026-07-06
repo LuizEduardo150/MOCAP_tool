@@ -1,4 +1,7 @@
-from blender_modules.utils import transform_all_pose_bones_to_eulerian_rotation, find_any_armature
+from blender_modules.utils import transform_all_pose_bones_to_eulerian_rotation, \
+                                  find_any_armature, anim_data_and_action_check_create,\
+                                  object_ready_for_keyframe_animation
+
 from blender_modules.armature_animator import ArmatureAnimator
 
 from pose.storage import FramePoseReader
@@ -60,6 +63,20 @@ def main():
     if not ready:
         return None
     
+    ready, message = animator.armature_bones_configuration_is_correct()
+    if not ready:
+        print(message)
+        return None
+    
+    has_errors, message = animator.armature_bones_relationship_has_errors()
+    if has_errors:
+        print(message)
+        return None
+
+    if not object_ready_for_keyframe_animation(animator.get_armature()):
+        anim_data_and_action_check_create(animator.get_armature())
+        print('|!| Objeto não possuia um animation data, e foi criado com nome de "MocapAction"')
+
     ''' =========================================================================== '''
 
     
@@ -77,11 +94,7 @@ def main():
     for i, data in enumerate(reader.records_list):
         # TODO
 
-
-        print(f"passo {i} de {steps}")
-
-
-    
+        print(f"passo {i+1} de {steps}")
 
     ''' =========================================================================== '''
 
