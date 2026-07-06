@@ -1,7 +1,7 @@
 import bpy # type: ignore
 from math import sqrt, degrees, acos
 
-from blender_modules.utils import object_is_armature, object_is_pose_bone
+from blender_modules.utils import object_is_armature, object_is_pose_bone, object_is_a_3x3_matrix
 
 
 
@@ -79,4 +79,25 @@ def blender_direct_angle_y_3d(armature, pose_bone, ignore_z=False):
     d_y = tail[1] - head[1]
 
     return degrees( acos ( (d_y / IvI) ) )
+
+
+def get_pose_bone_local_y_axis_basic_direction(transform_matrix):
+    """
+    Obter a direção de apontamento simples dos eixo Y local, com base no eixo global do blender
+    
+    OBS: Não obtem medida precisa de apontamento, apenas valores de 0 a 1, para indicar o quão
+    está apontando para um eixo global ou não.
+    
+    :returns fail: (None, None, None)
+    :returns sucess: (int, int, int)
+    """
+
+    if not object_is_a_3x3_matrix(transform_matrix):
+        return None, None, None
+    
+    x = round(transform_matrix.col[1][0])
+    y = round(transform_matrix.col[1][1])
+    z = round(transform_matrix.col[1][2])
+
+    return x, y, z
 
