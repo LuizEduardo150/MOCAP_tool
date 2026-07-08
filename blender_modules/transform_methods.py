@@ -47,7 +47,7 @@ def set_object_degrees_rotations_euler(obj, rot_axes:list):
         elif i == 2 and value is not None:
             obj.rotation_euler.z = radians(value)
         
-        else:
+        elif i > 2:
             break
 
 
