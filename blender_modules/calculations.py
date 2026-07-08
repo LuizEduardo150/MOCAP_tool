@@ -10,9 +10,7 @@ def get_pose_bone_global_position(armature, pose_bone):
     if not object_is_armature(armature) or not object_is_pose_bone(pose_bone):
         return None
     
-    # inverter global para local
-    vector = (armature.matrix_world @ pose_bone.matrix).to_translation()
-    return vector[0], vector[2], vector[1]
+    return (armature.matrix_world @ pose_bone.matrix).to_translation()    
 
 
 def get_pose_bone_global_head_position(armature, pose_bone):
@@ -20,18 +18,14 @@ def get_pose_bone_global_head_position(armature, pose_bone):
     if not object_is_armature(armature) or not object_is_pose_bone(pose_bone):
         return None
         
-    # inverter global para local
-    vector = armature.matrix_world @ pose_bone.head
-    return vector[0], vector[2], vector[1]
+    return armature.matrix_world @ pose_bone.head    
 
 
 def get_pose_bone_global_tail_position(armature, pose_bone):
     if not object_is_armature(armature) or not object_is_pose_bone(pose_bone):
         return None
     
-    # inverter global para local
-    vector = armature.matrix_world @ pose_bone.tail
-    return vector[0], vector[2], vector[1]
+    return armature.matrix_world @ pose_bone.tail
 
 
 def blender_euclidean_distance_3d(armature, pose_bone, ignore_z=False):
@@ -101,3 +95,44 @@ def get_pose_bone_local_y_axis_basic_direction(transform_matrix):
 
     return x, y, z
 
+
+def get_pose_bone_local_x_axis_basic_direction(transform_matrix):
+    """
+    Obter a direção de apontamento simples dos eixo X local, com base no eixo global do blender
+    
+    OBS: Não obtem medida precisa de apontamento, apenas valores de 0 a 1, para indicar o quão
+    está apontando para um eixo global ou não.
+    
+    :returns fail: (None, None, None)
+    :returns sucess: (int, int, int)
+    """
+
+    if not object_is_a_3x3_matrix(transform_matrix):
+        return None, None, None
+    
+    x = round(transform_matrix.col[0][0])
+    y = round(transform_matrix.col[0][1])
+    z = round(transform_matrix.col[0][2])
+
+    return x, y, z
+
+
+def get_pose_bone_local_z_axis_basic_direction(transform_matrix):
+    """
+    Obter a direção de apontamento simples dos eixo Z local, com base no eixo global do blender
+    
+    OBS: Não obtem medida precisa de apontamento, apenas valores de 0 a 1, para indicar o quão
+    está apontando para um eixo global ou não.
+    
+    :returns fail: (None, None, None)
+    :returns sucess: (int, int, int)
+    """
+
+    if not object_is_a_3x3_matrix(transform_matrix):
+        return None, None, None
+    
+    x = round(transform_matrix.col[2][0])
+    y = round(transform_matrix.col[2][1])
+    z = round(transform_matrix.col[2][2])
+
+    return x, y, z
