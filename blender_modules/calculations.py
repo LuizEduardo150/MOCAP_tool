@@ -49,7 +49,7 @@ def blender_euclidean_distance_3d(armature, pose_bone, ignore_z=False):
     return sqrt((d_x**2) + (d_y**2) + (d_z**2))
 
 
-def blender_direct_angle_x_3d(armature, pose_bone, ignore_z=False):
+def blender_direct_angle_x_3d(armature, pose_bone, ignore_z=False, same_vector_orientation=True):
     if not object_is_armature(armature) or not object_is_pose_bone(pose_bone):
         return None
     
@@ -57,7 +57,15 @@ def blender_direct_angle_x_3d(armature, pose_bone, ignore_z=False):
     tail = get_pose_bone_global_tail_position(armature, pose_bone)
 
     IvI = blender_euclidean_distance_3d(armature, pose_bone, ignore_z)
-    d_x = tail[0] - head[0]
+    
+    if same_vector_orientation:
+        if tail[0] > head[0]:
+            d_x = tail[0] - head[0]
+        else:
+            d_x = head[0] - tail[0]
+
+    else:
+        d_x = tail[0] - head[0]
 
     return degrees( acos ( (d_x / IvI) ) )
 
