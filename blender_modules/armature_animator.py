@@ -1,8 +1,9 @@
 import bpy # type: ignore
 
 from blender_modules.utils import object_is_armature, \
-    object_is_pose_bone, get_blender_object_degrees_euler_rotation, \
-    get_all_pose_bones_name_list_from_armature
+    object_is_pose_bone, get_all_pose_bones_name_list_from_armature
+
+from blender_modules.transform_methods import get_blender_object_rotation_euler_degrees_transform
 
 from blender_modules.calculations import get_pose_bone_local_y_axis_basic_direction
 
@@ -56,7 +57,7 @@ class ArmatureAnimator:
             message += "|X| É preciso informar a armature\n"
 
         if self._armature is not None:
-            rot = get_blender_object_degrees_euler_rotation(self._armature)
+            rot = get_blender_object_rotation_euler_degrees_transform(self._armature)
             if rot[0] != 0 or rot[1] != 0 or rot[2] != 0:
                 ready = False
                 message += "|X| Antes é preciso aplicar as transformações da armature\n"
