@@ -4,6 +4,9 @@ from blender_modules.utils import transform_all_pose_bones_to_eulerian_rotation,
 
 from blender_modules.armature_animator import ArmatureAnimator
 
+from blender_modules.calculations import search_for_forward_direction
+
+
 from pose.storage import FramePoseReader
 from pose.calculations import convert_mp_world_data_to_blender_format
 
@@ -55,6 +58,9 @@ def main():
     if (0) in map_bones.keys():
         animator.set_main_control_pose_bone(map_bones[(0)])
     
+    if ("forward") in map_bones.keys():
+        animator.set_forward_axis(map_bones[("forward")])
+
     animator.bone_map_mp_blender = map_bones
 
     ready, message = animator.is_ready()
@@ -76,6 +82,15 @@ def main():
     if not object_ready_for_keyframe_animation(animator.get_armature()):
         anim_data_and_action_check_create(animator.get_armature())
         print('|!| Objeto não possuia um animation data, e foi criado com nome de "MocapAction"')
+
+    if animator.get_forward_axis() == "":
+        ret = search_for_forward_direction(animator.get_armature(), map_bones)
+        if ret is not None:
+            print(f'|!| Não foi encontrado uma direção "FORWARD", mas pode ser deduzido; utilizando {ret} para "FORWARD"')
+        else:
+            print('|X| Não foi encontrado uma direção para "FORWARD" e nem pode ser deduzido')
+            return None
+
 
     ''' =========================================================================== '''
 

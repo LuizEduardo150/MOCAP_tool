@@ -28,6 +28,38 @@ def get_pose_bone_global_tail_position(armature, pose_bone):
     return armature.matrix_world @ pose_bone.tail
 
 
+def search_for_forward_direction(arm, map_bones:dict):
+    
+    if not object_is_armature(arm) or map_bones is None or len(map_bones) == 0:
+        return None
+
+    for key in map_bones.keys():
+        if key == (27, 29) or key == (28, 30):
+            bone = arm.pose.bones.get(map_bones[key])
+            vector = get_pose_bone_local_y_axis_basic_direction(bone.matrix.to_3x3())
+            
+            if vector[0] != 0: # X
+                if vector[0] > 0:
+                    return "x+"
+                else:
+                    return "x-"
+            
+            elif vector[1] != 0: # Y
+                if vector[1] > 0:
+                    return "y+"
+                else:
+                    return "y-"
+
+            elif vector[2] != 0: # Z
+                if vector[2] > 0:
+                    return "z+"
+                else:
+                    return "z-"
+
+    return None
+
+
+
 def blender_euclidean_distance_3d(armature, pose_bone, ignore_z=False):
     """
     Comprimento de um osso

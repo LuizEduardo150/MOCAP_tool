@@ -56,8 +56,13 @@ def write_basic_file(output_path, file_name) -> bool:
     "(c) : \n" \
     "\n\n" \
     "# Armature\n" \
-    "(a) : "
-
+    "(a) : \n" \
+    "\n" \
+    "# Direcao FORWARD\n" \
+    "# Equivalente a perguntar: Para qual eixo global seu personagem aponta quando está de frente?\n" \
+    "# ex: x+ ou x-, y+ ou y-, z+ ou z-\n" \
+    "# caso não for declarado, o programa tentará encontrar automaticamente\n" \
+    "(forward): \n"
 
 
     file = None
@@ -69,7 +74,7 @@ def write_basic_file(output_path, file_name) -> bool:
         return False
 
     file.writelines(txt_struct)
-    print(f'Arquivo "{file_name}" salvo na pasta: "{output_path}"')
+    print(f'\nArquivo "{file_name}" salvo na pasta: "{output_path}"')
 
     file.close()
     return True
@@ -144,7 +149,18 @@ def write_step_by_step_file(output_path, file_name):
                   f"(c) : {name}\n"
 
     name = input('\nNome do objeto "Armature" no blender: ')
-    txt_struct += f"\n\n# Armature\n(a) : {name}"
+    txt_struct += f"\n\n# Armature\n(a) : {name}\n\n"
+
+    name = input("Eixo global (com sinal) FORWARD\nEquivalente a: Para qual eixo global seu personagem "\
+                 "aponta quando está de frente?\nExemplo: x+ ou x-, y+ ou y-, z+ ou z-\n" \
+                 "Eixo FORWARD: ")
+    
+    txt_struct += "\n# Direcao FORWARD\n" \
+                  "# Equivalente a perguntar: Para qual eixo global seu personagem aponta quando está de frente?\n" \
+                  "# ex: x+ ou x-, y+ ou y-, z+ ou z-\n" \
+                  "# caso não for declarado, o programa tentará encontrar automaticamente\n" \
+                  f"(forward): {name}\n"
+
 
     file.writelines(txt_struct)
     print(f'\nArquivo "{file_name}" salvo na pasta: "{output_path}"')
@@ -182,7 +198,7 @@ def get_bone_map_from_file(output_path, file_name) -> dict | None:
             continue
 
         key_str = line_content[0].rstrip().lstrip()
-        bone_name = line_content[1].rstrip().lstrip()
+        content = line_content[1].rstrip().lstrip()
 
         key_parts = key_str.replace("(", "").replace(")", "").split(",")
         
@@ -190,23 +206,26 @@ def get_bone_map_from_file(output_path, file_name) -> dict | None:
             key_first_part = int(key_parts[0])
             key_second_part = int(key_parts[1])
             
-            bone_map[(key_first_part, key_second_part)] = bone_name
+            bone_map[(key_first_part, key_second_part)] = content
         
         elif len(key_parts) == 1 and key_parts[0] == '0': # main
-            bone_map[(0)] = bone_name
+            bone_map[(0)] = content
         
         elif len(key_parts) == 1 and key_parts[0] == "a": # armature
-            bone_map[(key_parts[0])] = bone_name
+            bone_map[(key_parts[0])] = content
         
         elif len(key_parts) == 1 and key_parts[0] == "c": # coluna
-            if bone_name.find(",") != -1:
-                bone_name = bone_name.split(",")
+            if content.find(",") != -1:
+                content = content.split(",")
             
-            if type(bone_name) is list and len(bone_name) > 0:
-                for i in range(len(bone_name)):
-                    bone_name[i] = bone_name[i].rstrip().lstrip()
+            if type(content) is list and len(content) > 0:
+                for i in range(len(content)):
+                    content[i] = content[i].rstrip().lstrip()
 
-            bone_map[(key_parts[0])] = bone_name
+            bone_map[(key_parts[0])] = content
+        
+        elif len(key_parts) == 1 and key_parts[0] == "forward" :
+            bone_map[(key_parts[0])] = content
         
     
     file.close()
