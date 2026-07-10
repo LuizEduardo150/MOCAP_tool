@@ -63,7 +63,7 @@ def main():
 
     animator.bone_map_mp_blender = map_bones
 
-    ready, message = animator.is_ready()
+    ready, message = animator.check_attribute_instances()
     print(message)
     
     if not ready:
@@ -86,11 +86,10 @@ def main():
     if animator.get_forward_axis() == "":
         ret = search_for_forward_direction(animator.get_armature(), map_bones)
         if ret is not None:
-            print(f'|!| Não foi encontrado uma direção "FORWARD", mas pode ser deduzido; utilizando {ret} para "FORWARD"')
+            print(f'|!| Não foi encontrado uma direção "FORWARD", mas foi deduzido; utilizando {ret} para "FORWARD"')
         else:
             print('|X| Não foi encontrado uma direção para "FORWARD" e nem pode ser deduzido')
             return None
-
 
     ''' =========================================================================== '''
 
@@ -108,7 +107,7 @@ def main():
     # _ percorrer frames
     for i, data in enumerate(reader.records_list):
         # TODO
-
+        print(data)
         print(f"passo {i+1} de {steps}")
 
     ''' =========================================================================== '''

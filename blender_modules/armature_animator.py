@@ -87,7 +87,7 @@ class ArmatureAnimator:
         return self._forward_axis
 
 
-    def is_ready(self):
+    def check_attribute_instances(self):
         ready = True
         message = ""
 
@@ -154,8 +154,6 @@ class ArmatureAnimator:
                     message += "|X| O arquivo contem nomes de ossos não encontrados no projeto blender: \n"
                     for name in temp_unnow:
                         message += f"    |_ {name}\n"
-
-        
 
             # Conferir se todos ossos foram atribuidos
             check_conections = list(self.bone_map_mp_blender.keys())
@@ -227,7 +225,6 @@ class ArmatureAnimator:
 
 
         return ready, message
-
 
 
     def armature_bones_relationship_has_errors(self):
