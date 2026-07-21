@@ -28,37 +28,6 @@ def get_pose_bone_global_tail_position(armature, pose_bone):
     return armature.matrix_world @ pose_bone.tail
 
 
-def search_for_forward_direction(arm, map_bones:dict):
-    
-    if not object_is_armature(arm) or map_bones is None or len(map_bones) == 0:
-        return None
-
-    for key in map_bones.keys():
-        if key == (27, 29) or key == (28, 30):
-            bone = arm.pose.bones.get(map_bones[key])
-            vector = get_pose_bone_local_y_axis_basic_direction(bone.matrix.to_3x3())
-            
-            if vector[0] != 0: # X
-                if vector[0] > 0:
-                    return "x+"
-                else:
-                    return "x-"
-            
-            elif vector[1] != 0: # Y
-                if vector[1] > 0:
-                    return "y+"
-                else:
-                    return "y-"
-
-            elif vector[2] != 0: # Z
-                if vector[2] > 0:
-                    return "z+"
-                else:
-                    return "z-"
-
-    return None
-
-
 
 def blender_euclidean_distance_3d(armature, pose_bone, ignore_z=False):
     """
@@ -79,6 +48,7 @@ def blender_euclidean_distance_3d(armature, pose_bone, ignore_z=False):
         d_z = 0
 
     return sqrt((d_x**2) + (d_y**2) + (d_z**2))
+
 
 
 def blender_direct_angle_x_3d(armature, pose_bone, ignore_z=False, same_vector_orientation=True):
@@ -102,6 +72,7 @@ def blender_direct_angle_x_3d(armature, pose_bone, ignore_z=False, same_vector_o
     return degrees( acos ( (d_x / IvI) ) )
 
 
+
 def blender_direct_angle_y_3d(armature, pose_bone, ignore_z=False):
     if not object_is_armature(armature) or not object_is_pose_bone(pose_bone):
         return None
@@ -113,6 +84,7 @@ def blender_direct_angle_y_3d(armature, pose_bone, ignore_z=False):
     d_y = tail[1] - head[1]
 
     return degrees( acos ( (d_y / IvI) ) )
+
 
 
 def get_pose_bone_local_y_axis_basic_direction(transform_matrix):
@@ -136,6 +108,7 @@ def get_pose_bone_local_y_axis_basic_direction(transform_matrix):
     return x, y, z
 
 
+
 def get_pose_bone_local_x_axis_basic_direction(transform_matrix):
     """
     Obter a direção de apontamento simples dos eixo X local, com base no eixo global do blender
@@ -155,6 +128,7 @@ def get_pose_bone_local_x_axis_basic_direction(transform_matrix):
     z = round(transform_matrix.col[0][2])
 
     return x, y, z
+
 
 
 def get_pose_bone_local_z_axis_basic_direction(transform_matrix):

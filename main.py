@@ -234,9 +234,8 @@ while main_opt != "0" and main_opt.lower() != 'q':
         "\n\n-------------- MOCAP TOOL -------------------" \
         "\n| (1) Iniciar processamento de vídeo" \
         "\n| (2) Exibir captura sem gerar registro" \
-        "\n| (3) Suavisar resultado do rastreio" \
-        "\n| (4) Exibir poses registradas em arquivo binário" \
-        "\n| (5) Prepara arquivo de mapeamento de ossos"
+        "\n| (3) Exibir poses registradas em arquivo binário" \
+        "\n| (4) Prepara arquivo de mapeamento de ossos"
         "\n| (0) Sair do programa" \
         "\n------------------------------------------------" \
         "\n >> Sua escolha: "
@@ -411,13 +410,8 @@ while main_opt != "0" and main_opt.lower() != 'q':
         container.close()
 
 
-    elif main_opt == "3":
-        # TODO
-        pass
-
-
     # MENU : Exibir poses registradas em arquivo binário
-    elif main_opt == '4':
+    elif main_opt == '3':
         
         file_name = input("Nome do arquivo de registros: ")
         reader = FramePoseReader(output_path, file_name)
@@ -450,14 +444,14 @@ while main_opt != "0" and main_opt.lower() != 'q':
             image = draw_landmarks_on_image(image, pose_list, [11, 13, 21, 15, 19, 17, 23, 25, 27, 29, 31, 1, 2, 3, 7, 9])
 
             cv2.imshow('view bin', image)
-            if cv2.waitKey(51) & 0xFF == ord('q'):
+            if cv2.waitKey(30) & 0xFF == ord('q'):
                 break
         
         cv2.destroyAllWindows()
         reader.close_file_descriptor()
 
 
-    elif main_opt == "5":
+    elif main_opt == "4":
         map_bones_menu()
 
 

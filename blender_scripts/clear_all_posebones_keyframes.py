@@ -1,7 +1,7 @@
 import bpy # type: ignore
 
-from blender_modules.utils import remove_all_pose_bones_keyframes, object_is_armature
-
+from blender_modules.utils import object_is_armature
+from blender_modules.key_frame_methods import remove_all_pose_bones_keyframes
 
 
 def main():

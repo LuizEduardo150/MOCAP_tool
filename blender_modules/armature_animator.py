@@ -3,37 +3,10 @@ import bpy # type: ignore
 from blender_modules.utils import object_is_armature, \
     object_is_pose_bone, get_all_pose_bones_name_list_from_armature
 
-from blender_modules.transform_methods import get_blender_object_rotation_euler_degrees_transform
-
 from blender_modules.calculations import get_pose_bone_local_y_axis_basic_direction
 
 from pose.models import BODY_POSE_CONECTIONS_FOR_BLENDER
 
-
-def check_forward(content:str):
-    if content is None or content == "" or len(content) < 2:
-        return None
-        
-    forward = ""
-
-    for char in content:
-        if char == " ":
-            continue
-
-        char = char.lower()
-        forward += char
-
-        if len(forward) == 2:
-            break
-
-    if forward == "" or len(forward) < 2:
-        return None
-    
-    elif forward[0] in ['x', 'y', 'z'] and forward[1] in ['+', '-']:
-        return forward
-
-    else:
-        return None
 
 
 
@@ -42,7 +15,6 @@ class ArmatureAnimator:
         self._armature : bpy.types.Armature = None
         self._main_pose_bone : bpy.types.PoseBone = None
         self.bone_map_mp_blender : dict = None
-        self._forward_axis = ""
 
 
     def set_armature(self, name:str) -> bool:
@@ -54,15 +26,6 @@ class ArmatureAnimator:
             return True
         else:
             return False
-
-
-    def set_forward_axis(self, content:str):
-        if content is None or content == "" or len(content) < 2:
-            return False
-        
-        ret = check_forward(content)
-        if ret is not None:
-            self._forward_axis = ret
 
 
     def set_main_control_pose_bone(self, pose_bone_name:str):
@@ -81,10 +44,6 @@ class ArmatureAnimator:
 
     def get_armature(self):
         return self._armature
-    
-
-    def get_forward_axis(self):
-        return self._forward_axis
 
 
     def check_attribute_instances(self):
@@ -94,12 +53,6 @@ class ArmatureAnimator:
         if not object_is_armature(self._armature):
             ready = False
             message += "|X| É preciso informar a armature\n"
-
-        if self._armature is not None:
-            rot = get_blender_object_rotation_euler_degrees_transform(self._armature)
-            if rot[0] != 0 or rot[1] != 0 or rot[2] != 0:
-                ready = False
-                message += "|X| Antes é preciso aplicar as transformações da armature\n"
 
         if self._main_pose_bone is None:
             ready = False
@@ -126,7 +79,7 @@ class ArmatureAnimator:
             if pose_bones_list is not None:
 
                 for key in self.bone_map_mp_blender.keys():
-                    if key == ('a') or key == ("forward"):
+                    if key == ('a'):
                         continue
 
                     item = self.bone_map_mp_blender[key]

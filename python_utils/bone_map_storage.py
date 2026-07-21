@@ -56,13 +56,7 @@ def write_basic_file(output_path, file_name) -> bool:
     "(c) : \n" \
     "\n\n" \
     "# Armature\n" \
-    "(a) : \n" \
-    "\n" \
-    "# Direcao FORWARD\n" \
-    "# Equivalente a perguntar: Para qual eixo global seu personagem aponta quando está de frente?\n" \
-    "# ex: x+ ou x-, y+ ou y-, z+ ou z-\n" \
-    "# caso não for declarado, o programa tentará encontrar automaticamente\n" \
-    "(forward): \n"
+    "(a) : \n"
 
 
     file = None
@@ -151,17 +145,6 @@ def write_step_by_step_file(output_path, file_name):
     name = input('\nNome do objeto "Armature" no blender: ')
     txt_struct += f"\n\n# Armature\n(a) : {name}\n\n"
 
-    name = input("Eixo global (com sinal) FORWARD\nEquivalente a: Para qual eixo global seu personagem "\
-                 "aponta quando está de frente?\nExemplo: x+ ou x-, y+ ou y-, z+ ou z-\n" \
-                 "Eixo FORWARD: ")
-    
-    txt_struct += "\n# Direcao FORWARD\n" \
-                  "# Equivalente a perguntar: Para qual eixo global seu personagem aponta quando está de frente?\n" \
-                  "# ex: x+ ou x-, y+ ou y-, z+ ou z-\n" \
-                  "# caso não for declarado, o programa tentará encontrar automaticamente\n" \
-                  f"(forward): {name}\n"
-
-
     file.writelines(txt_struct)
     print(f'\nArquivo "{file_name}" salvo na pasta: "{output_path}"')
     file.close()
@@ -222,9 +205,6 @@ def get_bone_map_from_file(output_path, file_name) -> dict | None:
                 for i in range(len(content)):
                     content[i] = content[i].rstrip().lstrip()
 
-            bone_map[(key_parts[0])] = content
-        
-        elif len(key_parts) == 1 and key_parts[0] == "forward" :
             bone_map[(key_parts[0])] = content
         
     
