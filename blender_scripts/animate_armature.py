@@ -55,9 +55,6 @@ def main():
 
     if (0) in map_bones.keys():
         animator.set_main_control_pose_bone(map_bones[(0)])
-    
-    if ("forward") in map_bones.keys():
-        animator.set_forward_axis(map_bones[("forward")])
 
     animator.bone_map_mp_blender = map_bones
 
