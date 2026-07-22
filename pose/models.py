@@ -20,8 +20,8 @@ POSE_CONNECTIONS = [
 BODY_POSE_CONECTIONS_FOR_BLENDER = [
     
     #(11, 12), # Nao trabalhamos no blender com ombro inteiro
-    (11, 13), (12, 14), # Hands
-    (13, 15), (14, 16), # Fore Hands
+    (11, 13), (12, 14), # arms
+    (13, 15), (14, 16), # Forearms
     (15, 17), (16, 18), # Hands
     #(11, 23), (12, 24), # Belly
     (23, 25), (24, 26), # UpperLeg
