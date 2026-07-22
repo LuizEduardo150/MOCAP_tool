@@ -45,7 +45,7 @@ def write_basic_file(output_path, file_name) -> bool:
     "(28, 30) : \n" \
     "\n" \
     "# Cabeça\n" \
-    "(8, 7) : \n" \
+    "(9, 1) : \n" \
     "\n\n" \
     "# Os demais parâmetros são para ossos não rastreados pelo Media Pipe\n\n" \
     "# Osso principal da armature (Controla rotação global)\n" \
@@ -129,7 +129,7 @@ def write_step_by_step_file(output_path, file_name):
     txt_struct += f"# Pé direito\n(28, 30) : {name}\n"
 
     name = input("Cabeça: ")
-    txt_struct += f"# Cabeça\n(8, 7) : {name}\n" \
+    txt_struct += f"# Cabeça\n(9, 1) : {name}\n" \
 
     name = input("Osso principal da armature (Controla rotação global): ")
     txt_struct += "\n\n# Os demais parâmetros são para ossos não rastreados pelo Media Pipe\n\n" \
