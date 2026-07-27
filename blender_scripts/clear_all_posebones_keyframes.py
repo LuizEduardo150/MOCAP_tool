@@ -17,5 +17,7 @@ def main():
     else:
         print("Impossível remover keyframes")
 
+    for bone_ in arm.pose.bones:
+        bone_.rotation_quaternion = (1.0, 0, 0, 0)
 
 main()
