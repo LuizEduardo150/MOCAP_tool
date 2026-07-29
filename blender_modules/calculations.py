@@ -45,66 +45,6 @@ def get_pose_bone_vector(armature, pose_bone) -> Vector:
     return tail - head
 
 
-def get_bone_global_to_local_reference_list(pose_bone):
-    """
-        Obter a posição das componentes do vetor de osso em pose Mode, para ajustar a orientação
-        global para local.
-        
-        OBS: Os valores retornados representam a posicao das componentes x, y, z seguidos de um inteiro
-        -1 ou 1, para indicar sentido trocado ou não.
-        
-        :Returns sucess: lista com 3 tuplas: (index, sinal)
-        :Returns fail: None
-    """
-
-    if not object_is_pose_bone(pose_bone):
-        return None
-    
-    check_matrix = pose_bone.matrix.to_3x3()
-    
-    x_line = round(check_matrix[0][0]), round(check_matrix[0][1]), round(check_matrix[0][2])
-    y_line = round(check_matrix[1][0]), round(check_matrix[1][1]), round(check_matrix[1][2])
-    z_line = round(check_matrix[2][0]), round(check_matrix[2][1]), round(check_matrix[2][2])
-
-
-    for index_x, global_x_signal in enumerate(x_line):
-        if global_x_signal != 0:
-            break
-    
-    for index_y, global_y_signal in enumerate(y_line):
-        if global_y_signal != 0:
-            break
-    
-    for index_z, global_z_signal in enumerate(z_line):
-        if global_z_signal != 0:
-            break
-
-    return [(index_x, global_x_signal), (index_y, global_y_signal), (index_z, global_z_signal)]
-
-
-def convert_vector_to_local_reference(original_vector: Vector, global_to_local_map: list):
-
-    if original_vector is None or len(original_vector) != 3 or global_to_local_map is None or len(global_to_local_map) != 3:
-        return None
-
-    global_x_component = Vector((0, 0, 0))
-    global_y_component = Vector((0, 0, 0))
-    global_z_component = Vector((0, 0, 0))
-
-    # deslocar valor de X
-    global_x_component[global_to_local_map[0][0]] = original_vector[0] * global_to_local_map[0][1]
-    
-    # deslocar valor de y
-    global_y_component[global_to_local_map[1][0]] = original_vector[1] * global_to_local_map[1][1]
-
-    # deslocar valor de z
-    global_z_component[global_to_local_map[2][0]] = original_vector[2] * global_to_local_map[2][1]
-
-
-    return global_x_component + global_y_component + global_z_component
-
-
-
 
 def get_pose_bone_local_y_axis_basic_direction(transform_matrix):
     """
