@@ -125,6 +125,89 @@ def dev_process_image():
     print(f'"{file_name}" salvo na pasta do programa: files/output')
 
 
+def dev_single_pose_from_video():
+    files = listdir(input_path)
+        
+    if len(files) == 0:
+        print(f"\nX >> Não há arquivos salvos na pasta: {input_path}")
+        return
+    
+    list_input_files(files)
+    file = choose_input_file(files)
+    
+    if file is None:
+        return
+
+    container, stream = get_av_video_container(f"{input_path}/{file}")
+
+    if container is None:
+        print("\n|X| > Falha inesperada")
+        return
+    
+    rotation = input("\nSerá preciso aplicar rotação nos frames ?\n(S/Any): ").lower()
+    rotation = 90 if rotation == "s" else None
+    
+    processor = MPPoseProcessor(trained_model)
+    frame_timestamp_ms = 0
+
+    print('\nClique  "ENTER" na janela de exibição para próximo frame' \
+          '\nClique  "s" na janela de exibição para salvar poses do frame' \
+          '\nClique  "q" na janela de exibição para SAIR do vídeo')
+    
+    for frame in container.decode(video=0):
+        img = frame.to_ndarray(format="bgr24")
+
+        if rotation is not None: 
+            img = rotate_image(img, rotation)
+        
+        h, w, _ = img.shape
+
+        if h > 1080 or w > 1920:
+            prop1 = 1080/h
+            prop2 = 1920/w
+            prop = prop1-0.1 if prop1 < prop2 else prop2-0.1
+            
+            img = resize_by_scale(img, prop)
+        
+        if incremental_method is None:
+            frame_timestamp_ms = float(frame.pts * frame.time_base * 1000)
+        else:
+            frame_timestamp_ms += incremental_method
+            
+        processor.process_frame(img, frame_timestamp_ms)
+        img = draw_landmarks_on_image(img, processor.get_pose_info_list())
+
+        cv2.imshow("Video", img)
+        
+        if cv2.waitKey(0) & 0xFF == ord('q'):
+            break
+
+        elif cv2.waitKey(0) & 0xFF == ord('s'):
+            file_name = "frame_" + input("\n> Escolha o nome do arquivo a ser gerado: ")
+            pose_writer = FramePoseWriter(output_path, file_name)
+
+            if not pose_writer.is_ready():
+                print(f'\nXXX  Impossível gerar arquivo de saída "{output_path}/{file_name}"  XXX')
+                return
+
+            if processor.pose_info_result is not None and len(processor.pose_info_result) > 0:
+                pose_writer.write_shape_of_video(h, w)
+                pose_writer.write_landmarks(processor.get_pose_info_list())
+
+            else:
+                print("Não há poses para registro")
+                pose_writer.close_file_descriptor()
+                return None
+
+            pose_writer.close_file_descriptor()
+            print(f'"{file_name}" salvo na pasta do programa: files/output')
+
+    cv2.destroyAllWindows()
+    processor.close_landmarker()
+    container.close()
+
+
+
 def dev_show_pose_from_image():
     file_name = input("Nome do arquivo de registros: ")
     
@@ -463,7 +546,8 @@ while main_opt != "0" and main_opt.lower() != 'q':
             dev_opt = input(
                 "\n\n---------- [DEV: DEBUG Options] --------------" \
                 "\n| (1) Processamento em imagem" \
-                "\n| (2) Exibir poses registradas em arquivo binário" \
+                "\n| (2) Exibir pose registrada em arquivo binário" \
+                "\n| (3) Gerar arquivos de registros únicos por vídeo"
                 "\n| (0) Sair do DEV Menu " \
                 "\n------------------------------------------------" \
                 "\n >> Sua escolha: "
@@ -474,6 +558,9 @@ while main_opt != "0" and main_opt.lower() != 'q':
 
             elif dev_opt == "2" :
                 dev_show_pose_from_image()
+
+            elif dev_opt == "3":
+                dev_single_pose_from_video()
 
             else:
                 if dev_opt != '0' and dev_opt.lower() != "q":
