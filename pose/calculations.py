@@ -13,7 +13,7 @@ def convert_mp_world_data_to_blender_format(frames:list):
 
     MP_Pose Y Zero: meio do corpo (perto do umbigo)
     Blender Y Zero: Depende de onde construiram o modelo, mas geralmente nos pés
-    """        
+    """
 
     if frames is None or len(frames) == 0:
         return None
@@ -40,6 +40,12 @@ def convert_mp_world_data_to_blender_format(frames:list):
             if mins[i] < 0:
                 pose.y_world = pose.y_world + (mins[i] * -1)
 
+    # __ converter Y para Z
+    for pose_list in frames:
+        for pose in pose_list:
+            y_aux = pose.y_world
+            pose.y_world = pose.z_world
+            pose.z_world = y_aux
 
 
 def get_correct_bone_index_sequence(pose_list, index1, index2):
