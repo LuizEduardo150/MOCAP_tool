@@ -20,4 +20,7 @@ def main():
     for bone_ in arm.pose.bones:
         bone_.rotation_quaternion = (1.0, 0, 0, 0)
 
+    bpy.context.scene.frame_start = 1
+    bpy.context.scene.frame_set(1)
+
 main()
