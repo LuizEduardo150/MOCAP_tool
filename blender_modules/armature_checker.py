@@ -9,8 +9,7 @@ from pose.models import BODY_POSE_CONECTIONS_FOR_BLENDER
 
 
 
-
-class ArmatureAnimator:
+class ArmatureChecker:
     def __init__(self):
         self._armature : bpy.types.Armature = None
         self._main_pose_bone : bpy.types.PoseBone = None
@@ -44,6 +43,9 @@ class ArmatureAnimator:
 
     def get_armature(self):
         return self._armature
+
+    def get_main_bone(self):
+        return self._main_pose_bone
 
 
     def check_attribute_instances(self):
@@ -179,56 +181,3 @@ class ArmatureAnimator:
 
         return ready, message
 
-
-    def armature_bones_relationship_has_errors(self):
-        """
-            Verificar conexões de ossos que são obrigatórios para a ferramenta
-            
-            OBS: Executa-lo depois de carregar mapeamento de ossos e execurar is ready
-
-            Args:
-                :arm: Armature objext
-                :map_bones: Python dict with tuple as keys 
-
-            :returns error: None
-            :returns sucess: (bool, str)
-        """
-
-        if not object_is_armature(self._armature) or self.bone_map_mp_blender is None or type(self.bone_map_mp_blender) != dict:
-            return None
-
-        bpy.ops.object.mode_set(mode='EDIT')
-        erro = False
-        message = ""
-
-        check_connections = [
-            [(15, 17), (13, 15), (11, 13)], # L arm
-            [(16, 18), (14, 16), (12, 14)], # R arm
-            [(27, 29), (25, 27), (23, 25)], # L leg
-            [(28, 30), (26, 28), (24, 26)]  # R leg
-        ]
-
-        for connections in check_connections:
-            for i in range(len(connections)-1):
-                
-                connection = connections[i]
-                next_bone_connection = connections[i+1]
-                
-                bone = self._armature.data.edit_bones.get(self.bone_map_mp_blender[connection])
-                father_bone_name = self.bone_map_mp_blender[next_bone_connection]
-
-                if bone.parent:
-
-                    if not bone.use_connect:
-                        erro = True
-                        message += f'|X| O osso "{bone.name}" está desconectado\n'
-
-                    if bone.parent.name != father_bone_name:
-                        erro = True
-                        message += f'|X| Osso "{bone.name}" em hierarquia errada\n'
-
-                else:
-                    erro = True
-                    message += f'|X| O osso "{bone.name}" desobedece a hierarquia de ossos da armature\n'
-
-        return erro, message
