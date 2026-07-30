@@ -244,7 +244,7 @@ def animate_armature(records_list):
             approximation_shifting_quaternion_w_value(bone_key, mp_bone_vector)
             insert_rotation_keyframe(pose_bone, 5)
 
-        print(f">> passo {i+1} de {steps}")
+        print(f"\r>> passo {i+1} de {steps}", end="")
 
 
 
