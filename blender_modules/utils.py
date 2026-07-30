@@ -103,3 +103,15 @@ def transform_all_pose_bones_to_quaternion_rotation(armature):
         bone.rotation_mode = 'QUATERNION'
 
     return True
+
+
+
+def reset_armature_pose(armature):
+    if not object_is_armature(armature):
+        return False
+
+    for bone_ in armature.pose.bones:
+        bone_.rotation_quaternion = (1.0, 0, 0, 0)
+
+    bpy.context.view_layer.update()
+    return True

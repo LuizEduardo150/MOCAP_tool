@@ -1,6 +1,4 @@
-import bpy # type: ignore
-
-from mathutils import Vector, Quaternion # type: ignore
+from mathutils import Vector # type: ignore
 
 from math import sqrt, degrees, acos
 
@@ -166,3 +164,7 @@ def blender_direct_angle_y_3d(armature, pose_bone, ignore_z=False):
     d_y = tail[1] - head[1]
 
     return degrees( acos ( (d_y / IvI) ) )
+
+
+def vector_similarity(v1: Vector, v2: Vector):
+    return v1.normalized().dot(v2.normalized())
