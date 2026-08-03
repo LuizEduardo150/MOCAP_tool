@@ -153,12 +153,12 @@ def write_step_by_step_file(output_path, file_name):
 
 
 
-def get_bone_map_from_file(output_path, file_name) -> dict | None:
+def get_bone_map_from_file(file_path) -> dict | None:
     file = None
-    file_name = file_name_check_extension(file_name, "txt")
+    file_path = file_name_check_extension(file_path, "txt")
 
     try:
-        file = open(f"{output_path}/{file_name}", "r")            
+        file = open(file_path, "r")
     except:
         return None
     

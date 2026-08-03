@@ -75,7 +75,15 @@ def program_check():
             '# use "None" ou vazio: para não destacar poses\n' \
             '# use "tpose"        : para destacar pose em T\n' \
             '# use "align"        : para destacar corpo alinhado com a câmera\n\n' \
-            "emphasis_pose: None"
+            "emphasis_pose: None\n\n\n"\
+            "# ____________________________________________________________________\n\n"\
+            "# Seção para configuração do programa injector.bin\n"\
+            "# responsável por injetar o script python dentro de um projeto blender\n"\
+            "# todos os campos a seguir devem ser preenchidos com diretório absoluto\n\n"\
+            "# executável do blender:\n"\
+            "blender_exec:\n\n"\
+            "# projeto blender:\n"\
+            "blender_project:"
         
 
         file = open("./config.txt", "w")

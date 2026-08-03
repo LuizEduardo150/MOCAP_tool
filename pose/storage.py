@@ -56,7 +56,7 @@ class FramePoseWriter:
 
 class FramePoseReader:
 
-    def __init__(self, output_path:str, file_name):
+    def __init__(self, file_name):
         self._file_descriptor = None
         self._is_ready = None
         self.records_list = None
@@ -66,7 +66,7 @@ class FramePoseReader:
         file_name = file_name_check_extension(file_name, ".pkl")
 
         try:
-            self._file_descriptor = open(f"{output_path}/{file_name}", "rb")
+            self._file_descriptor = open(file_name, "rb")
             self._is_ready = True
         except:
             self._is_ready = False
