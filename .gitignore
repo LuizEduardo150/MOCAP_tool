@@ -13,6 +13,9 @@ anotacoes/
 # Ignorar qualquer arquivo ou pasta que comece com "test"
 test*
 
+# Ignorar qualquer arquivo ou pasta que comece com "temp"
+temp*
+
 # Ignorar também em qualquer subdiretório
 **/test*
 
