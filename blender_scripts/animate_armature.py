@@ -248,22 +248,16 @@ def animate_armature(records_list):
 
 
 
-
-mppose_output_path = "/home/luiz-eduardo/Documents/tcc_project/files/output"
-file = "euf.pkl"
-map_file = "map_bones.txt"
-
-arm : bpy.types.Armature = None
-main_bone : bpy.types.PoseBone = None
-map_bones = None
-
-
 def main():
     global arm, map_bones, main_bone
 
-    map_bones = get_bone_map_from_file(mppose_output_path, map_file)
+    props = bpy.context.scene.mocap_form
+    file = props.pose_file
+    map_file = props.bone_map_file
+
+    map_bones = get_bone_map_from_file(map_file)
     if map_bones is None:
-        print(f'XXX Arquivo de mapeamento "{map_file}" não existe em: "{mppose_output_path}" XXX')
+        print(f'XXX Arquivo de mapeamento "{map_file}" não existe XXX')
         return None
 
     ret = check_armature(map_bones)
@@ -274,9 +268,9 @@ def main():
     arm  = bpy.data.objects.get(map_bones[('a')])
     main_bone = arm.pose.bones.get(map_bones[(0)])
 
-    reader = FramePoseReader(mppose_output_path, file)
+    reader = FramePoseReader(file)
     if not reader.is_ready():
-        print(f'XXX Arquivo "{file}" não existe em: "{mppose_output_path}" XXX')
+        print(f'XXX Arquivo "{file}" não existe XXX')
         return None
 
     reader.load_data_from_file()
@@ -293,4 +287,8 @@ def main():
 # **************************
 #   main function
 # **************************
+arm : bpy.types.Armature = None
+main_bone : bpy.types.PoseBone = None
+map_bones = None
+
 main()
