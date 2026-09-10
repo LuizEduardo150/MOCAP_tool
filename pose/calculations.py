@@ -18,8 +18,6 @@ def convert_mp_world_data_to_blender_format(frames:list):
     if frames is None or len(frames) == 0:
         return None
 
-    mins = []
-
     # __ (inverter sinais do Y) e (obter menor valor de Y em cada frame)
     for pose_list in frames:
         min = None
@@ -30,19 +28,14 @@ def convert_mp_world_data_to_blender_format(frames:list):
             if min is None or pose.y_world < min:
                 min = pose.y_world
 
-        mins.append(min) # menor valor de Y de um frame
-    
-    # __ fazer o deslocamento dos numeros do eixo Y para que todo valor de y >= 0
-    for i, pose_list in enumerate(frames):
-        
+        # __ fazer o deslocamento dos numeros do eixo Y
+        # __ converter Y para Z    
         for pose in pose_list:
-                    
-            if mins[i] < 0:
-                pose.y_world = pose.y_world + (mins[i] * -1)
+            if min < 0:
+                pose.y_world = pose.y_world + (min * -1)
+            else:
+                pose.y_world = pose.y_world + min
 
-    # __ converter Y para Z
-    for pose_list in frames:
-        for pose in pose_list:
             y_aux = pose.y_world
             pose.y_world = pose.z_world
             pose.z_world = y_aux
@@ -80,9 +73,9 @@ def get_body_part_horizontal_rotation(pose_list, index1, index2):
         return None
      
     d_x = pose_list[index2].x_world - pose_list[index1].x_world
-    d_z = pose_list[index2].z_world - pose_list[index1].z_world
+    d_y = pose_list[11].y_world - pose_list[12].y_world
 
-    return degrees(atan2(d_z, d_x))
+    return degrees(atan2(d_y, d_x))
 
 
 def euclidean_distance_3d(pose_list, bone_index_1:int, bone_index_2:int, ignore_z=False):

@@ -39,10 +39,10 @@ def write_basic_file(output_path, file_name) -> bool:
     "(26, 28) : \n" \
     "\n" \
     "# Pé esquerdo\n" \
-    "(27, 29) : \n" \
+    "(27, 31) : \n" \
     "\n" \
     "# Pé direito\n" \
-    "(28, 30) : \n" \
+    "(28, 32) : \n" \
     "\n" \
     "# Cabeça\n" \
     "(9, 1) : \n" \
@@ -123,10 +123,10 @@ def write_step_by_step_file(output_path, file_name):
     txt_struct += f"# Parte inferior da perna direita\n(26, 28) : {name}\n\n" \
 
     name = input("Pé esquerdo: ")
-    txt_struct += f"# Pé esquerdo\n(27, 29) : {name}\n\n" \
+    txt_struct += f"# Pé esquerdo\n(27, 31) : {name}\n\n" \
     
     name = input("Pé direito: ")
-    txt_struct += f"# Pé direito\n(28, 30) : {name}\n"
+    txt_struct += f"# Pé direito\n(28, 32) : {name}\n"
 
     name = input("Cabeça: ")
     txt_struct += f"# Cabeça\n(9, 1) : {name}\n" \

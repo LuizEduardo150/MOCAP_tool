@@ -18,6 +18,10 @@ def file_name_check_extension(file_name:str, extension:str) -> str:
         extension = f".{extension}"
 
     index = file_name.rfind(".")
+
+    if index == 0:
+        # refazer verificacao novamente, por causa de problema com diretorios locais por exemplo: ./meu/diretorio
+        index = file_name[1:].rfind(".")
     
     if index == -1:
         return f"{file_name}{extension}"

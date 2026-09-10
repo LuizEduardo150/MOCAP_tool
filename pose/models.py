@@ -26,7 +26,7 @@ BODY_POSE_CONECTIONS_FOR_BLENDER = [
     #(11, 23), (12, 24), # Belly
     (23, 25), (24, 26), # UpperLeg
     (25, 27), (26, 28), # LowerLeg
-    (27, 29), (28, 30), # FOOT
+    (27, 31), (28, 32), # FOOT
     (9, 1) # HEAD
     #(29, 31), (30, 32), (27, 31), (28, 32) # Outros possiveis valores para foot
 ]

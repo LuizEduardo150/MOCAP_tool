@@ -209,9 +209,9 @@ def dev_single_pose_from_video():
 
 
 def dev_show_pose_from_image():
-    file_name = input("Nome do arquivo de registros: ")
+    file_name = input(f'Nome do arquivo de registros em "{output_path}": ')
     
-    reader = FramePoseReader(output_path, file_name)
+    reader = FramePoseReader(f"{output_path}/{file_name}")
 
     if not reader.is_ready():
         print("\nXXX Arquivo não encontrado XXX")
@@ -497,7 +497,7 @@ while main_opt != "0" and main_opt.lower() != 'q':
     elif main_opt == '3':
         
         file_name = input("Nome do arquivo de registros: ")
-        reader = FramePoseReader(output_path, file_name)
+        reader = FramePoseReader(f"{output_path}/{file_name}")
 
         if not reader.is_ready():
             print("\nXXX Arquivo não encontrado XXX")
