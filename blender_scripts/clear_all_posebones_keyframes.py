@@ -6,7 +6,10 @@ from blender_modules.key_frame_methods import remove_all_pose_bones_keyframes
 
 def main():
 
-    arm = bpy.data.objects.get("skeleton")
+    props = bpy.context.scene.mocap_form
+    armature_name = props.armature_name
+
+    arm = bpy.data.objects.get(armature_name)
 
     if not object_is_armature(arm):
         print("Objeto selecionado incompatível ou inexistente")

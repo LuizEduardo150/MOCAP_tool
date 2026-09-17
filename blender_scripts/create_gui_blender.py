@@ -27,6 +27,11 @@ class MOCAPForm(bpy.types.PropertyGroup):
         default=sys_path[-1]
     ) # type: ignore
 
+    armature_name: StringProperty(
+        name="nome armature",
+        default="(Apenas para função de limpar animação)"
+    ) # type: ignore
+
 
 # -----------------------------------------------------
 # Operador Confirmar
@@ -111,6 +116,8 @@ class MOCAPTL_PT_panel(bpy.types.Panel):
         layout.prop(props, "mocap_src_path")
         layout.prop(props, "pose_file")
         layout.prop(props, "bone_map_file")
+
+        layout.prop(props, "armature_name")
 
         layout.separator()
         row = layout.row()
