@@ -177,8 +177,22 @@ def get_bone_map_from_file(file_path) -> dict | None:
 
         line_content = line.split(':')
 
-        if len(line_content) != 2:
-            continue
+        if len(line_content) != 2: # Formato não esperado com mais de uma ocorrencia de :
+            if len(line_content) > 2:
+
+                full_name = ""
+                last_i = len(line_content[1:]) - 1
+
+                for i, item in enumerate(line_content[1:]):
+                    if i != last_i:
+                        full_name += f"{item}:"
+                    else:
+                        full_name += item
+
+                line_content = [line_content[0], full_name]
+
+            else:
+                continue
 
         key_str = line_content[0].rstrip().lstrip()
         content = line_content[1].rstrip().lstrip()
